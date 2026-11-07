@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() {
   runApp(const VoxyApp());
@@ -15,464 +16,487 @@ class VoxyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF030305),
-        colorScheme: const ColorScheme.dark(
-          primary: Color(0xFF6366F1),
-          secondary: Color(0xFF38BDF8),
-          surface: Color(0xFF0A0C10),
-          background: Color(0xFF030305),
-        ),
+        scaffoldBackgroundColor: const Color(0xFF0C0D0E),
+        textTheme: GoogleFonts.unboundedTextTheme(ThemeData.dark().textTheme),
         useMaterial3: true,
       ),
-      home: const VoxyHomeScreen(),
+      home: const VoxyMainScreen(),
     );
   }
 }
 
-class VoxyHomeScreen extends StatefulWidget {
-  const VoxyHomeScreen({super.key});
+class VoxyMainScreen extends StatefulWidget {
+  const VoxyMainScreen({super.key});
 
   @override
-  State<VoxyHomeScreen> createState() => _VoxyHomeScreenState();
+  State<VoxyMainScreen> createState() => _VoxyMainScreenState();
 }
 
-class _VoxyHomeScreenState extends State<VoxyHomeScreen>
-    with SingleTickerProviderStateMixin {
-  bool _isConnected = false;
-  late AnimationController _pulseController;
-  int _selectedProtocolIdx = 0;
-  int _selectedNodeIdx = 0;
+class _VoxyMainScreenState extends State<VoxyMainScreen> {
+  int _currentTab = 1; // 0: Onboarding/Info, 1: Connect, 2: Servers
+  bool _isConnected = true;
+  int _selectedServerIdx = 0;
 
-  final List<String> _protocols = [
-    'MIXED (VLESS + TUN)',
-    'VLESS REALITY',
-    'WIREGUARD TUN',
-    'SHADOWSOCKS 2022',
-    'HYSTERIA 2',
+  final List<Map<String, dynamic>> _servers = [
+    {
+      'country': 'United States',
+      'city': 'New York',
+      'ip': '92.118.160.102',
+      'sub': 'Los Angeles, New York, Chicago, Houston',
+      'ping': '24',
+      'count': '16',
+      'flag': '🇺🇸',
+      'unlocked': true,
+    },
+    {
+      'country': 'Germany',
+      'city': 'Frankfurt',
+      'ip': '185.190.140.12',
+      'sub': 'Berlin, Hamburg, Munich, Frankfurt',
+      'ping': '18',
+      'count': '5',
+      'flag': '🇩🇪',
+      'unlocked': true,
+    },
+    {
+      'country': 'Netherlands',
+      'city': 'Amsterdam',
+      'ip': '45.134.225.88',
+      'sub': 'Amsterdam, Rotterdam',
+      'ping': '21',
+      'count': '8',
+      'flag': '🇳🇱',
+      'unlocked': true,
+    },
+    {
+      'country': 'Canada',
+      'city': 'Toronto',
+      'ip': '142.250.180.14',
+      'sub': '12 cities, best ping: 54 ms',
+      'ping': '54',
+      'count': '12',
+      'flag': '🇨🇦',
+      'unlocked': false,
+      'price': r'$12',
+    },
+    {
+      'country': 'Ireland',
+      'city': 'Dublin',
+      'ip': '54.217.11.90',
+      'sub': '5 cities, best ping: 106 ms',
+      'ping': '106',
+      'count': '5',
+      'flag': '🇮🇪',
+      'unlocked': false,
+      'price': r'$16',
+    },
+    {
+      'country': 'Georgia',
+      'city': 'Tbilisi',
+      'ip': '178.134.20.15',
+      'sub': '4 cities, best ping: 48 ms',
+      'ping': '48',
+      'count': '4',
+      'flag': '🇬🇪',
+      'unlocked': false,
+      'price': r'$8',
+    },
+    {
+      'country': 'Switzerland',
+      'city': 'Zurich',
+      'ip': '193.134.25.10',
+      'sub': '4 cities, best ping: 41 ms',
+      'ping': '41',
+      'count': '4',
+      'flag': '🇨🇭',
+      'unlocked': false,
+      'price': r'$16',
+    },
   ];
-
-  final List<Map<String, String>> _nodes = [
-    {'city': 'Frankfurt', 'code': 'DE-01', 'ping': '14 ms', 'flag': '🇩🇪', 'ip': '185.190.140.12'},
-    {'city': 'Amsterdam', 'code': 'NL-04', 'ping': '19 ms', 'flag': '🇳🇱', 'ip': '45.134.225.88'},
-    {'city': 'Helsinki', 'code': 'FI-02', 'ping': '27 ms', 'flag': '🇫🇮', 'ip': '95.216.14.33'},
-    {'city': 'Warsaw', 'code': 'PL-01', 'ping': '22 ms', 'flag': '🇵🇱', 'ip': '193.33.111.4'},
-    {'city': 'Tokyo', 'code': 'JP-03', 'ping': '115 ms', 'flag': '🇯🇵', 'ip': '103.102.166.5'},
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2400),
-    )..repeat();
-  }
-
-  @override
-  void dispose() {
-    _pulseController.dispose();
-    super.dispose();
-  }
-
-  void _toggleConnection() {
-    setState(() {
-      _isConnected = !_isConnected;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
-    final activeNode = _nodes[_selectedNodeIdx];
-    final activeColor = _isConnected ? const Color(0xFF10B981) : const Color(0xFF6366F1);
-
     return Scaffold(
-      backgroundColor: const Color(0xFF030305),
-      body: Stack(
-        children: [
-          // Cyber Ambient Glow Background
-          Positioned(
-            top: -120,
-            left: -80,
-            child: Container(
-              width: 320,
-              height: 320,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    activeColor.withOpacity(_isConnected ? 0.22 : 0.12),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: -100,
-            right: -80,
-            child: Container(
-              width: 350,
-              height: 350,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    const Color(0xFF38BDF8).withOpacity(_isConnected ? 0.15 : 0.05),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 22.0, vertical: 12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+      backgroundColor: const Color(0xFF0C0D0E),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: IndexedStack(
+                index: _currentTab,
                 children: [
-                  // Modern Header
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF0B0E14),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.white.withOpacity(0.08)),
-                            ),
-                            child: Image.asset(
-                              'assets/images/voxy-logo.png',
-                              width: 26,
-                              height: 26,
-                              errorBuilder: (_, __, ___) =>
-                                  const Icon(Icons.shield_rounded, color: Color(0xFF6366F1), size: 26),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          const Text(
-                            'VOXY',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 3,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          _buildGlassIconBtn(Icons.tune_rounded, () {}),
-                          const SizedBox(width: 10),
-                          _buildGlassIconBtn(Icons.settings_outlined, () {}),
-                        ],
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // OLED Pill Status Header
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF080A0F),
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(
-                        color: _isConnected
-                            ? const Color(0xFF10B981).withOpacity(0.35)
-                            : Colors.white.withOpacity(0.06),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 8,
-                              height: 8,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: _isConnected ? const Color(0xFF10B981) : const Color(0xFF64748B),
-                                boxShadow: _isConnected
-                                    ? [
-                                        BoxShadow(
-                                          color: const Color(0xFF10B981).withOpacity(0.8),
-                                          blurRadius: 10,
-                                          spreadRadius: 2,
-                                        )
-                                      ]
-                                    : [],
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Text(
-                              _isConnected ? 'CONNECTED' : 'DISCONNECTED',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 1.2,
-                                color: _isConnected ? const Color(0xFF10B981) : const Color(0xFF94A3B8),
-                              ),
-                            ),
-                          ],
-                        ),
-                        Text(
-                          _isConnected ? '00:24:18' : '--:--:--',
-                          style: TextStyle(
-                            fontFamily: 'monospace',
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white.withOpacity(0.5),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const Spacer(),
-
-                  // Futuristic OLED Power Core Button
-                  Center(
-                    child: GestureDetector(
-                      onTap: _toggleConnection,
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          // Ripple animation rings when active
-                          if (_isConnected)
-                            AnimatedBuilder(
-                              animation: _pulseController,
-                              builder: (context, child) {
-                                return Container(
-                                  width: 250 + (_pulseController.value * 30),
-                                  height: 250 + (_pulseController.value * 30),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: const Color(0xFF10B981).withOpacity(0.35 * (1 - _pulseController.value)),
-                                      width: 2,
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-
-                          // Outer Ring
-                          Container(
-                            width: 220,
-                            height: 220,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: const Color(0xFF06080D),
-                              border: Border.all(
-                                color: _isConnected
-                                    ? const Color(0xFF10B981).withOpacity(0.6)
-                                    : Colors.white.withOpacity(0.08),
-                                width: 2,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: _isConnected
-                                      ? const Color(0xFF10B981).withOpacity(0.35)
-                                      : Colors.black.withOpacity(0.8),
-                                  blurRadius: 40,
-                                  spreadRadius: _isConnected ? 8 : 1,
-                                ),
-                              ],
-                            ),
-                            child: Center(
-                              // Inner Core Button
-                              child: Container(
-                                width: 170,
-                                height: 170,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  gradient: RadialGradient(
-                                    colors: _isConnected
-                                        ? [
-                                            const Color(0xFF10B981),
-                                            const Color(0xFF047857),
-                                            const Color(0xFF064E3B),
-                                          ]
-                                        : [
-                                            const Color(0xFF1A1F2C),
-                                            const Color(0xFF0E131F),
-                                            const Color(0xFF06080D),
-                                          ],
-                                  ),
-                                  border: Border.all(
-                                    color: _isConnected
-                                        ? const Color(0xFF6EE7B7)
-                                        : Colors.white.withOpacity(0.12),
-                                    width: 1.5,
-                                  ),
-                                ),
-                                child: Center(
-                                  child: Icon(
-                                    Icons.power_settings_new_rounded,
-                                    size: 76,
-                                    color: _isConnected ? Colors.white : const Color(0xFF64748B),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  Center(
-                    child: Text(
-                      _isConnected ? 'TAP TO TERMINATE TUNNEL' : 'TAP TO INITIALIZE SECURE PROXY',
-                      style: TextStyle(
-                        fontSize: 11,
-                        letterSpacing: 2,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white.withOpacity(0.4),
-                      ),
-                    ),
-                  ),
-
-                  const Spacer(),
-
-                  // Live Traffic Metrics Bar
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF07090E),
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: Colors.white.withOpacity(0.06)),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        _buildMetricCol('DOWNLOAD', _isConnected ? '42.8 MB/s' : '0.0 B/s', Icons.arrow_downward_rounded, const Color(0xFF38BDF8)),
-                        Container(width: 1, height: 28, color: Colors.white.withOpacity(0.08)),
-                        _buildMetricCol('UPLOAD', _isConnected ? '12.4 MB/s' : '0.0 B/s', Icons.arrow_upward_rounded, const Color(0xFF818CF8)),
-                        Container(width: 1, height: 28, color: Colors.white.withOpacity(0.08)),
-                        _buildMetricCol('LATENCY', _isConnected ? activeNode['ping']! : '--', Icons.bolt_rounded, const Color(0xFF10B981)),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  // Protocol Dropdown Switcher
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF07090E),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.white.withOpacity(0.06)),
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<int>(
-                        value: _selectedProtocolIdx,
-                        isExpanded: true,
-                        dropdownColor: const Color(0xFF0B0E14),
-                        icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white54),
-                        items: List.generate(_protocols.length, (i) {
-                          return DropdownMenuItem<int>(
-                            value: i,
-                            child: Row(
-                              children: [
-                                const Icon(Icons.vpn_lock_rounded, size: 16, color: Color(0xFF818CF8)),
-                                const SizedBox(width: 10),
-                                Text(
-                                  _protocols[i],
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 1.1,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }),
-                        onChanged: (val) {
-                          if (val != null) setState(() => _selectedProtocolIdx = val);
-                        },
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  // Server Location Selector Sheet
-                  InkWell(
-                    onTap: _showServerSelectionModal,
-                    borderRadius: BorderRadius.circular(18),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF07090E),
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: Colors.white.withOpacity(0.06)),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              Text(activeNode['flag']!, style: const TextStyle(fontSize: 26)),
-                              const SizedBox(width: 14),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    '${activeNode['city']} • ${activeNode['code']}',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w800,
-                                      fontSize: 14,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    'IP: ${activeNode['ip']}',
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      color: Colors.white.withOpacity(0.35),
-                                      fontFamily: 'monospace',
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF10B981).withOpacity(0.12),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: const Color(0xFF10B981).withOpacity(0.3)),
-                            ),
-                            child: Text(
-                              activeNode['ping']!,
-                              style: const TextStyle(
-                                color: Color(0xFF10B981),
-                                fontWeight: FontWeight.w800,
-                                fontSize: 11,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
+                  _buildIntroScreen(),
+                  _buildConnectionScreen(),
+                  _buildServersScreen(),
                 ],
               ),
+            ),
+            _buildBottomNav(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // SCREEN 1: Onboarding / Geometric Branding
+  Widget _buildIntroScreen() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 28.0, vertical: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Image.asset(
+                'assets/images/voxy-logo.png',
+                width: 24,
+                height: 24,
+                errorBuilder: (_, __, ___) => const Icon(Icons.shield, size: 24, color: Colors.white),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF16181A),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white10),
+                ),
+                child: const Text('EN ▾', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+          const Spacer(),
+          // Radial Futuristic Compass Dial
+          SizedBox(
+            width: 260,
+            height: 260,
+            child: CustomPaint(
+              painter: GeometricDialPainter(),
+              child: const Center(
+                child: Text(
+                  'V',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white54,
+                    letterSpacing: 2,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const Spacer(),
+          const Text(
+            'Secure. Fast.\nStability.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
+              height: 1.25,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 14),
+          Text(
+            'Top-notch security, blazing speed,\nunwavering stability. Your digital world,\nprotected.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w400,
+              color: Colors.white.withOpacity(0.45),
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(width: 18, height: 4, decoration: BoxDecoration(color: const Color(0xFFE5FE10), borderRadius: BorderRadius.circular(2))),
+              const SizedBox(width: 6),
+              Container(width: 4, height: 4, decoration: const BoxDecoration(color: Colors.white24, shape: BoxShape.circle)),
+              const SizedBox(width: 6),
+              Container(width: 4, height: 4, decoration: const BoxDecoration(color: Colors.white24, shape: BoxShape.circle)),
+            ],
+          ),
+          const SizedBox(height: 28),
+          SizedBox(
+            width: double.infinity,
+            height: 54,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFE5FE10),
+                foregroundColor: Colors.black,
+                elevation: 0,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(27)),
+              ),
+              onPressed: () => setState(() => _currentTab = 1),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('TRY NOW', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.5, fontSize: 13)),
+                  SizedBox(width: 8),
+                  Icon(Icons.arrow_forward_rounded, size: 18),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+
+  // SCREEN 2: Main Connect Dashboard (High Contrast Acid-Lime Glow)
+  Widget _buildConnectionScreen() {
+    final active = _servers[_selectedServerIdx];
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+      child: Column(
+        children: [
+          // Server Selection Card Header
+          InkWell(
+            onTap: () => setState(() => _currentTab = 2),
+            borderRadius: BorderRadius.circular(20),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                color: const Color(0xFF141618),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.white.withOpacity(0.06)),
+              ),
+              child: Row(
+                children: [
+                  Text(active['flag']!, style: const TextStyle(fontSize: 28)),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${active['city']}, ${active['country']}',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          active['ip']!,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.white.withOpacity(0.35),
+                            fontFamily: 'monospace',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(Icons.chevron_right_rounded, color: Colors.white54, size: 20),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          // Subheader Info Pill (Connected Time + Ping)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  _isConnected ? 'Connected: 1d 8h' : 'Disconnected',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white.withOpacity(0.4),
+                  ),
+                ),
+                Row(
+                  children: [
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: _isConnected ? const Color(0xFFE5FE10) : Colors.white24,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Ping: ${active['ping']}',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white.withOpacity(0.55),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          const Spacer(),
+
+          // Giant Acid-Lime Button with Outer Radial Track
+          GestureDetector(
+            onTap: () => setState(() => _isConnected = !_isConnected),
+            child: Container(
+              width: 240,
+              height: 240,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFF0F1113),
+                boxShadow: _isConnected
+                    ? [
+                        BoxShadow(
+                          color: const Color(0xFFE5FE10).withOpacity(0.22),
+                          blurRadius: 70,
+                          spreadRadius: 6,
+                        ),
+                      ]
+                    : [],
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Outer concentric ring
+                  Container(
+                    width: 215,
+                    height: 215,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0xFF1B1E22),
+                        width: 14,
+                      ),
+                    ),
+                  ),
+                  // Inner Core Button
+                  Container(
+                    width: 155,
+                    height: 155,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: _isConnected ? const Color(0xFFE5FE10) : const Color(0xFF1A1C1F),
+                    ),
+                    child: Center(
+                      child: Icon(
+                        Icons.power_settings_new_rounded,
+                        size: 72,
+                        color: _isConnected ? Colors.black : Colors.white30,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const Spacer(),
+
+          // Waveform Graphic
+          SizedBox(
+            height: 75,
+            width: double.infinity,
+            child: CustomPaint(
+              painter: SineWavePainter(active: _isConnected),
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          // Download / Upload Metrics
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildTrafficMetric('Download', _isConnected ? '52.4 Mbps' : '0.0 Mbps', Icons.arrow_downward_rounded),
+              _buildTrafficMetric('Upload', _isConnected ? '31.2 Mbps' : '0.0 Mbps', Icons.arrow_upward_rounded),
+            ],
+          ),
+
+          const SizedBox(height: 14),
+        ],
+      ),
+    );
+  }
+
+  // SCREEN 3: Servers List (Unlocked vs Locked)
+  Widget _buildServersScreen() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 22.0, vertical: 8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              GestureDetector(
+                onTap: () => setState(() => _currentTab = 1),
+                child: Row(
+                  children: [
+                    const Icon(Icons.chevron_left, color: Colors.white, size: 20),
+                    const SizedBox(width: 4),
+                    Text('Home', style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 13)),
+                  ],
+                ),
+              ),
+              const Icon(Icons.search_rounded, color: Colors.white, size: 22),
+            ],
+          ),
+          const SizedBox(height: 18),
+          const Text(
+            'Servers',
+            style: TextStyle(
+              fontSize: 26,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+              letterSpacing: 0.5,
+            ),
+          ),
+          const SizedBox(height: 18),
+          Expanded(
+            child: ListView(
+              children: [
+                Text(
+                  'UNLOCKED',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.5,
+                    color: Colors.white.withOpacity(0.35),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                ..._servers.where((s) => s['unlocked'] == true).map((s) {
+                  final idx = _servers.indexOf(s);
+                  final isSel = idx == _selectedServerIdx;
+                  return _buildServerTile(s, isSel, () {
+                    setState(() {
+                      _selectedServerIdx = idx;
+                      _currentTab = 1;
+                    });
+                  });
+                }),
+                const SizedBox(height: 20),
+                Text(
+                  'LOCKED',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.5,
+                    color: Colors.white.withOpacity(0.35),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                ..._servers.where((s) => s['unlocked'] == false).map((s) {
+                  return _buildServerTile(s, false, () {});
+                }),
+              ],
             ),
           ),
         ],
@@ -480,120 +504,187 @@ class _VoxyHomeScreenState extends State<VoxyHomeScreen>
     );
   }
 
-  Widget _buildGlassIconBtn(IconData icon, VoidCallback onTap) {
+  Widget _buildServerTile(Map<String, dynamic> s, bool isSelected, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: const EdgeInsets.all(9),
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: const Color(0xFF0B0E14),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white.withOpacity(0.08)),
+          color: isSelected ? const Color(0xFF191B1F) : const Color(0xFF131518),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? const Color(0xFFE5FE10).withOpacity(0.6) : Colors.white.withOpacity(0.04),
+          ),
         ),
-        child: Icon(icon, size: 18, color: Colors.white70),
+        child: Row(
+          children: [
+            Text(s['flag'], style: const TextStyle(fontSize: 26)),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    s['country'],
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    s['sub'],
+                    style: TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.38)),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            if (s['unlocked'] == true) ...[
+              Text(
+                '${s['count']} >',
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white.withOpacity(0.4)),
+              ),
+            ] else ...[
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE5FE10),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.lock, color: Colors.black, size: 11),
+                    const SizedBox(width: 4),
+                    Text(
+                      s['price'],
+                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.black),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildMetricCol(String label, String value, IconData icon, Color color) {
+  Widget _buildTrafficMetric(String label, String value, IconData icon) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            Icon(icon, size: 12, color: color),
+            Icon(icon, size: 14, color: Colors.white54),
             const SizedBox(width: 4),
             Text(
               label,
-              style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: Colors.white.withOpacity(0.35)),
+              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white.withOpacity(0.45)),
             ),
           ],
         ),
         const SizedBox(height: 4),
         Text(
           value,
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Colors.white),
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Colors.white),
         ),
       ],
     );
   }
 
-  void _showServerSelectionModal() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: const Color(0xFF07090E),
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+  Widget _buildBottomNav() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      decoration: const BoxDecoration(
+        color: Color(0xFF0C0D0E),
+        border: Border(top: BorderSide(color: Colors.white10, width: 0.5)),
       ),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'SELECT PROXY / VPN CLUSTER',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 1.5,
-                color: Color(0xFF38BDF8),
-              ),
-            ),
-            const SizedBox(height: 16),
-            ...List.generate(_nodes.length, (idx) {
-              final node = _nodes[idx];
-              final isCurrent = idx == _selectedNodeIdx;
-              return Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                decoration: BoxDecoration(
-                  color: isCurrent ? const Color(0xFF101524) : const Color(0xFF0B0E14),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: isCurrent ? const Color(0xFF6366F1).withOpacity(0.5) : Colors.white.withOpacity(0.06),
-                  ),
-                ),
-                child: ListTile(
-                  leading: Text(node['flag']!, style: const TextStyle(fontSize: 24)),
-                  title: Text(
-                    '${node['city']} • ${node['code']}',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                  ),
-                  subtitle: Text(
-                    'IP: ${node['ip']}',
-                    style: TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.35)),
-                  ),
-                  trailing: Text(
-                    node['ping']!,
-                    style: const TextStyle(
-                      color: Color(0xFF10B981),
-                      fontWeight: FontWeight.bold,
-                      fontSize: 11,
-                    ),
-                  ),
-                  onTap: () {
-                    setState(() => _selectedNodeIdx = idx);
-                    Navigator.pop(ctx);
-                  },
-                ),
-              );
-            }),
-            const SizedBox(height: 12),
-          ],
-        ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _buildNavIcon(Icons.home_filled, 1),
+          _buildNavIcon(Icons.language_rounded, 2),
+          _buildNavIcon(Icons.shield_outlined, 0),
+        ],
       ),
     );
   }
+
+  Widget _buildNavIcon(IconData icon, int tabIdx) {
+    final isSel = _currentTab == tabIdx;
+    return GestureDetector(
+      onTap: () => setState(() => _currentTab = tabIdx),
+      child: Icon(
+        icon,
+        size: 24,
+        color: isSel ? const Color(0xFFE5FE10) : Colors.white24,
+      ),
+    );
+  }
+}
+
+// Geometric Compass Dial Painter
+class GeometricDialPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final paint = Paint()
+      ..color = Colors.white.withOpacity(0.4)
+      ..strokeWidth = 2.2
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    final r = size.width * 0.42;
+    for (int i = 0; i < 6; i++) {
+      final angle = (i * 60) * math.pi / 180;
+      final p1 = Offset(center.dx + r * 0.65 * math.cos(angle), center.dy + r * 0.65 * math.sin(angle));
+      final p2 = Offset(center.dx + r * math.cos(angle), center.dy + r * math.sin(angle));
+      canvas.drawLine(p1, p2, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+// Smooth Dual Sine Wave Painter
+class SineWavePainter extends CustomPainter {
+  final bool active;
+  SineWavePainter({required this.active});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (!active) return;
+
+    final yellowPaint = Paint()
+      ..color = const Color(0xFFE5FE10)
+      ..strokeWidth = 1.8
+      ..style = PaintingStyle.stroke;
+
+    final bluePaint = Paint()
+      ..color = const Color(0xFF38BDF8)
+      ..strokeWidth = 1.6
+      ..style = PaintingStyle.stroke;
+
+    final yPath = Path();
+    final bPath = Path();
+
+    for (double x = 0; x <= size.width; x += 4) {
+      final y1 = (size.height * 0.45) + math.sin(x * 0.04) * 8 + math.cos(x * 0.08) * 6;
+      final y2 = (size.height * 0.55) + math.cos(x * 0.035) * 7 + math.sin(x * 0.07) * 5;
+      if (x == 0) {
+        yPath.moveTo(x, y1);
+        bPath.moveTo(x, y2);
+      } else {
+        yPath.lineTo(x, y1);
+        bPath.lineTo(x, y2);
+      }
+    }
+
+    canvas.drawPath(yPath, yellowPaint);
+    canvas.drawPath(bPath, bluePaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant SineWavePainter oldDelegate) => oldDelegate.active != active;
 }

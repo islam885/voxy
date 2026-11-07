@@ -3,434 +3,434 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VOXY — Cyber OLED Black</title>
+  <title>VOXY — Cyber Minimalist (Unbounded Edition)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+      font-family: 'Unbounded', -apple-system, sans-serif;
     }
     body {
-      background: #000000;
+      background: #474a51;
       color: #f8fafc;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      padding: 24px;
-      overflow: hidden;
+      padding: 30px;
+      gap: 30px;
+      flex-wrap: wrap;
     }
-    body::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
-      background-size: 24px 24px;
-      z-index: 0;
-      pointer-events: none;
-    }
-    .mockup-container {
-      width: 390px;
-      height: 820px;
-      background: #030305;
-      border-radius: 52px;
-      border: 6px solid #141722;
-      box-shadow: 
-        0 30px 80px rgba(0, 0, 0, 0.95),
-        0 0 60px rgba(99, 102, 241, 0.12),
-        inset 0 0 1px 1px rgba(255, 255, 255, 0.08);
+    .phone {
+      width: 375px;
+      height: 790px;
+      background: #0c0d0e;
+      border-radius: 46px;
+      border: 8px solid #1a1c1f;
+      box-shadow: 0 35px 80px rgba(0, 0, 0, 0.7);
       display: flex;
       flex-direction: column;
-      overflow: hidden;
       position: relative;
-      z-index: 1;
+      overflow: hidden;
     }
-    .glow-sphere {
-      position: absolute;
-      width: 280px;
-      height: 280px;
-      border-radius: 50%;
-      filter: blur(80px);
-      pointer-events: none;
-      transition: all 0.6s ease;
-    }
-    .glow-1 {
-      top: -100px;
-      left: -80px;
-      background: rgba(99, 102, 241, 0.12);
-    }
-    .glow-1.active {
-      background: rgba(16, 185, 129, 0.2);
-    }
-    .glow-2 {
-      bottom: -100px;
-      right: -80px;
-      background: rgba(56, 189, 248, 0.08);
-    }
-    .header {
-      padding: 24px 24px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      z-index: 2;
-    }
-    .brand-wrap {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .brand-logo {
-      width: 38px;
+    .phone-bar {
       height: 38px;
-      border-radius: 12px;
-      background: #080a0f;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.6);
-    }
-    .brand-logo img {
-      width: 26px;
-      height: 26px;
-      object-fit: contain;
-    }
-    .brand-title {
-      font-size: 20px;
-      font-weight: 900;
-      letter-spacing: 3px;
-      color: #ffffff;
-      line-height: 1;
-    }
-    .icon-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: 12px;
-      background: #080a0f;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #94a3b8;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .icon-btn:hover {
-      background: #121620;
-      color: #ffffff;
-    }
-    .icon-btn svg {
-      width: 18px;
-      height: 18px;
-      fill: currentColor;
-    }
-    .status-pill {
-      margin: 8px 22px 14px;
-      padding: 12px 18px;
-      background: #06080d;
-      border-radius: 18px;
-      border: 1px solid rgba(255, 255, 255, 0.06);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      z-index: 2;
-    }
-    .status-badge {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      padding: 0 24px;
       font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 1.5px;
-    }
-    .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #64748b;
-      transition: all 0.3s;
-    }
-    .dot.active {
-      background: #10b981;
-      box-shadow: 0 0 12px #10b981;
-    }
-    .timer {
-      font-family: monospace;
-      font-size: 12px;
       font-weight: 700;
-      color: rgba(255, 255, 255, 0.4);
+      color: #fff;
     }
-    .main-stage {
+    .screen-content {
       flex: 1;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      z-index: 2;
+      padding: 10px 22px 16px;
+      overflow-y: auto;
     }
-    .core-ring {
-      width: 220px;
-      height: 220px;
-      border-radius: 50%;
-      background: #04060a;
-      border: 2px solid rgba(255, 255, 255, 0.06);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85);
-      position: relative;
-      cursor: pointer;
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .core-ring.active {
-      border-color: rgba(16, 185, 129, 0.5);
-      box-shadow: 0 0 60px rgba(16, 185, 129, 0.35);
-    }
-    .core-button {
-      width: 170px;
-      height: 170px;
-      border-radius: 50%;
-      background: radial-gradient(circle, #161b26 0%, #0c1017 70%, #06080d 100%);
-      border: 1.5px solid rgba(255, 255, 255, 0.12);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      outline: none;
-      transition: all 0.4s ease;
-    }
-    .core-ring.active .core-button {
-      background: radial-gradient(circle, #10b981 0%, #047857 60%, #064e3b 100%);
-      border-color: #6ee7b7;
-    }
-    .power-symbol {
-      width: 68px;
-      height: 68px;
-      stroke: #64748b;
-      stroke-width: 2.2;
-      fill: none;
-      transition: all 0.3s ease;
-    }
-    .core-ring.active .power-symbol {
-      stroke: #ffffff;
-      filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.8));
-    }
-    .tap-label {
-      margin-top: 24px;
-      font-size: 10px;
-      font-weight: 800;
-      letter-spacing: 2px;
-      color: rgba(255, 255, 255, 0.35);
-      text-transform: uppercase;
-    }
-    .metrics-bar {
-      margin: 0 22px 12px;
-      padding: 14px 20px;
-      background: #06080d;
-      border-radius: 18px;
-      border: 1px solid rgba(255, 255, 255, 0.06);
+    .bottom-nav {
+      height: 56px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
       display: flex;
       justify-content: space-around;
       align-items: center;
-      z-index: 2;
+      background: #0c0d0e;
     }
-    .metric-col {
+    .nav-btn {
+      color: rgba(255, 255, 255, 0.25);
+      font-size: 20px;
+      cursor: pointer;
+    }
+    .nav-btn.active {
+      color: #e5fe10;
+    }
+
+    /* Screen 1: Onboarding */
+    .dial-wrap {
+      width: 220px;
+      height: 220px;
+      margin: 40px auto 20px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .dial-svg {
+      width: 100%;
+      height: 100%;
+    }
+    .intro-title {
+      font-size: 26px;
+      font-weight: 800;
+      text-align: center;
+      line-height: 1.25;
+      margin-top: 20px;
+    }
+    .intro-desc {
+      font-size: 11px;
+      font-weight: 400;
+      color: rgba(255, 255, 255, 0.45);
+      text-align: center;
+      line-height: 1.6;
+      margin-top: 12px;
+    }
+    .try-btn {
+      width: 100%;
+      height: 52px;
+      background: #e5fe10;
+      border-radius: 26px;
+      border: none;
+      color: #000;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      margin-top: auto;
+      box-shadow: 0 10px 30px rgba(229, 254, 16, 0.35);
+    }
+
+    /* Screen 2: Connect */
+    .server-card {
+      background: #141618;
+      border-radius: 18px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      cursor: pointer;
+    }
+    .server-flag {
+      font-size: 26px;
+    }
+    .server-meta {
+      flex: 1;
+    }
+    .server-name {
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .server-ip {
+      font-size: 10px;
+      font-family: monospace;
+      color: rgba(255, 255, 255, 0.35);
+    }
+    .status-sub {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.4);
+      margin: 14px 4px 0;
+    }
+    .ping-tag {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: rgba(255, 255, 255, 0.65);
+    }
+    .ping-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #e5fe10;
+    }
+    .core-power-wrap {
+      margin: auto auto;
+      width: 220px;
+      height: 220px;
+      background: #0f1113;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      box-shadow: 0 0 60px rgba(229, 254, 16, 0.25);
+    }
+    .outer-track {
+      position: absolute;
+      width: 195px;
+      height: 195px;
+      border-radius: 50%;
+      border: 12px solid #1b1e22;
+    }
+    .core-yellow-btn {
+      width: 142px;
+      height: 142px;
+      border-radius: 50%;
+      background: #e5fe10;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 2;
+      box-shadow: 0 0 25px rgba(229, 254, 16, 0.6);
+    }
+    .wave-svg {
+      width: 100%;
+      height: 65px;
+      margin-bottom: 20px;
+    }
+    .traffic-row {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 8px;
+    }
+    .traffic-item {
       display: flex;
       flex-direction: column;
-      align-items: center;
-      gap: 3px;
+      gap: 4px;
     }
-    .metric-hdr {
-      font-size: 9px;
-      font-weight: 800;
-      color: rgba(255, 255, 255, 0.35);
+    .traffic-lbl {
+      font-size: 10px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.45);
       display: flex;
       align-items: center;
       gap: 4px;
     }
-    .metric-val {
-      font-size: 13px;
+    .traffic-val {
+      font-size: 14px;
       font-weight: 800;
-      color: #ffffff;
     }
-    .v-divider {
-      width: 1px;
-      height: 26px;
-      background: rgba(255, 255, 255, 0.08);
+
+    /* Screen 3: Servers */
+    .servers-hdr {
+      font-size: 26px;
+      font-weight: 800;
+      margin: 16px 0 16px;
     }
-    .panel-footer {
-      padding: 0 22px 28px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      z-index: 2;
+    .section-lbl {
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      color: rgba(255, 255, 255, 0.35);
+      margin-bottom: 10px;
     }
-    .card-dark {
-      background: #06080d;
-      border: 1px solid rgba(255, 255, 255, 0.06);
+    .server-row {
+      background: #131518;
       border-radius: 16px;
-      padding: 14px 16px;
+      padding: 12px 14px;
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
       cursor: pointer;
-      transition: all 0.2s;
     }
-    .card-dark:hover {
-      background: #0c1017;
-      border-color: rgba(255, 255, 255, 0.12);
+    .server-row.active {
+      border-color: rgba(229, 254, 16, 0.5);
+      background: #181a1e;
     }
-    .flag-badge {
-      border-radius: 4px;
-      overflow: hidden;
-      display: inline-flex;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
-    }
-    .latency-pill {
-      background: rgba(16, 185, 129, 0.12);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      color: #10b981;
-      padding: 4px 10px;
-      border-radius: 8px;
-      font-size: 11px;
-      font-weight: 800;
+    .price-pill {
+      background: #e5fe10;
+      color: #000;
+      font-size: 10px;
+      font-weight: 900;
+      padding: 5px 10px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
   </style>
 </head>
 <body>
-  <div class="mockup-container">
-    <div class="glow-sphere glow-1" id="glow1"></div>
-    <div class="glow-sphere glow-2"></div>
 
-    <div class="header">
-      <div class="brand-wrap">
-        <div class="brand-logo">
-          <img src="data:image/png;base64,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" alt="Voxy Logo">
-        </div>
-        <div class="brand-title">VOXY</div>
-      </div>
-      <div style="display: flex; gap: 8px;">
-        <div class="icon-btn" title="Routing Rules">
-          <svg viewBox="0 0 24 24"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/></svg>
-        </div>
-        <div class="icon-btn" title="Settings">
-          <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
-        </div>
-      </div>
+  <!-- Screen 1: Onboarding Dial -->
+  <div class="phone">
+    <div class="phone-bar">
+      <span>9:41</span>
+      <span>EN ▾</span>
     </div>
-
-    <div class="status-pill">
-      <div class="status-badge">
-        <div id="dot" class="dot"></div>
-        <span id="status-title" style="color: #64748b;">DISCONNECTED</span>
+    <div class="screen-content">
+      <div class="dial-wrap">
+        <svg class="dial-svg" viewBox="0 0 200 200">
+          <!-- Geometric compass pointers from screenshot -->
+          <line x1="100" y1="20" x2="100" y2="60" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="165" y1="60" x2="140" y2="85" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+          <polyline points="160,65 140,85 155,90" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="35" y1="60" x2="60" y2="85" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+          <polyline points="40,65 60,85 45,90" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="40" y1="140" x2="70" y2="120" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="160" y1="140" x2="130" y2="120" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="100" y1="175" x2="100" y2="145" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+          <polyline points="90,165 100,175 110,165" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+          <!-- Center Y symbol -->
+          <text x="100" y="106" fill="rgba(255,255,255,0.7)" font-size="14" font-weight="900" text-anchor="middle">Y</text>
+        </svg>
       </div>
-      <span id="timer" class="timer">--:--:--</span>
-    </div>
-
-    <div class="main-stage">
-      <div id="coreRing" class="core-ring" onclick="toggleTunnel()">
-        <div class="core-button">
-          <svg class="power-symbol" viewBox="0 0 24 24">
-            <path stroke-linecap="round" d="M12 2v10M18.36 6.64A9 9 0 1 1 5.64 6.64"/>
-          </svg>
-        </div>
-      </div>
-      <div id="tapLabel" class="tap-label">Tap to initialize secure proxy</div>
-    </div>
-
-    <div class="metrics-bar">
-      <div class="metric-col">
-        <div class="metric-hdr"><span style="color: #38bdf8;">↓</span> DOWN</div>
-        <div id="downVal" class="metric-val">0.0 B/s</div>
-      </div>
-      <div class="v-divider"></div>
-      <div class="metric-col">
-        <div class="metric-hdr"><span style="color: #818cf8;">↑</span> UP</div>
-        <div id="upVal" class="metric-val">0.0 B/s</div>
-      </div>
-      <div class="v-divider"></div>
-      <div class="metric-col">
-        <div class="metric-hdr"><span style="color: #10b981;">⚡</span> PING</div>
-        <div id="pingVal" class="metric-val">--</div>
-      </div>
-    </div>
-
-    <div class="panel-footer">
-      <div class="card-dark">
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <svg style="width: 16px; height: 16px; fill: #818cf8;" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
-          <span style="font-size: 12px; font-weight: 800; letter-spacing: 1px;">MIXED (VLESS + TUN)</span>
-        </div>
-        <span style="color: #64748b; font-size: 12px;">▼</span>
+      <div class="intro-title">Secure. Fast.<br>Stability.</div>
+      <div class="intro-desc">Top-notch security, blazing speed,<br>unwavering stability. Your digital world,<br>protected.</div>
+      
+      <div style="display: flex; justify-content: center; gap: 6px; margin: 24px 0;">
+        <div style="width: 18px; height: 4px; background: #e5fe10; border-radius: 2px;"></div>
+        <div style="width: 4px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 50%;"></div>
+        <div style="width: 4px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 50%;"></div>
       </div>
 
-      <div class="card-dark">
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <span class="flag-badge"><svg width="28" height="20" viewBox="0 0 640 480"><path fill="#000" d="M0 0h640v160H0z"/><path fill="#d00" d="M0 160h640v160H0z"/><path fill="#ffce00" d="M0 320h640v160H0z"/></svg></span>
-          <div>
-            <div style="font-size: 13px; font-weight: 800;">Frankfurt • DE-01</div>
-            <div style="font-size: 10px; color: rgba(255,255,255,0.35); font-family: monospace;">IP: 185.190.140.12</div>
-          </div>
-        </div>
-        <div class="latency-pill">14 ms</div>
-      </div>
+      <button class="try-btn">
+        <span>TRY NOW</span>
+        <span>→</span>
+      </button>
     </div>
   </div>
 
-  <script>
-    let active = false;
-    let sec = 0;
-    let timerInterval = null;
+  <!-- Screen 2: Active Connection Dashboard -->
+  <div class="phone">
+    <div class="phone-bar">
+      <span>9:41</span>
+      <span>📶 🔋</span>
+    </div>
+    <div class="screen-content">
+      <div class="server-card">
+        <span class="server-flag">🇺🇸</span>
+        <div class="server-meta">
+          <div class="server-name">New York, United States</div>
+          <div class="server-ip">92.118.160.102</div>
+        </div>
+        <span style="color: rgba(255,255,255,0.4); font-size: 14px;">›</span>
+      </div>
 
-    function toggleTunnel() {
-      active = !active;
-      const ring = document.getElementById('coreRing');
-      const dot = document.getElementById('dot');
-      const glow = document.getElementById('glow1');
-      const title = document.getElementById('status-title');
-      const tapLabel = document.getElementById('tapLabel');
-      const timer = document.getElementById('timer');
-      const down = document.getElementById('downVal');
-      const up = document.getElementById('upVal');
-      const ping = document.getElementById('pingVal');
+      <div class="status-sub">
+        <span>Connected: 1d 8h</span>
+        <div class="ping-tag">
+          <div class="ping-dot"></div>
+          <span>Ping: 24</span>
+        </div>
+      </div>
 
-      if (active) {
-        ring.classList.add('active');
-        dot.classList.add('active');
-        glow.classList.add('active');
-        title.innerText = 'CONNECTED';
-        title.style.color = '#10b981';
-        tapLabel.innerText = 'Tap to terminate tunnel';
-        down.innerText = '42.8 MB/s';
-        up.innerText = '12.4 MB/s';
-        ping.innerText = '14 ms';
+      <div class="core-power-wrap">
+        <div class="outer-track"></div>
+        <button class="core-yellow-btn">
+          <svg style="width: 60px; height: 60px; stroke: #000; stroke-width: 3.5; fill: none;" viewBox="0 0 24 24">
+            <path stroke-linecap="round" d="M12 2v9M18.36 6.64A9 9 0 1 1 5.64 6.64"/>
+          </svg>
+        </button>
+      </div>
 
-        timerInterval = setInterval(() => {
-          sec++;
-          const m = String(Math.floor(sec / 60)).padStart(2, '0');
-          const s = String(sec % 60).padStart(2, '0');
-          timer.innerText = '00:' + m + ':' + s;
-          timer.style.color = '#ffffff';
-        }, 1000);
-      } else {
-        ring.classList.remove('active');
-        dot.classList.remove('active');
-        glow.classList.remove('active');
-        title.innerText = 'DISCONNECTED';
-        title.style.color = '#64748b';
-        tapLabel.innerText = 'Tap to initialize secure proxy';
-        down.innerText = '0.0 B/s';
-        up.innerText = '0.0 B/s';
-        ping.innerText = '--';
+      <!-- High Tech Dual Waves -->
+      <svg class="wave-svg" viewBox="0 0 320 60" preserveAspectRatio="none">
+        <path d="M0,35 Q40,15 80,38 T160,20 T240,40 T320,25" fill="none" stroke="#e5fe10" stroke-width="2"/>
+        <path d="M0,45 Q50,30 100,48 T200,32 T280,48 T320,38" fill="none" stroke="#38bdf8" stroke-width="1.8"/>
+      </svg>
 
-        clearInterval(timerInterval);
-        sec = 0;
-        timer.innerText = '--:--:--';
-        timer.style.color = 'rgba(255, 255, 255, 0.4)';
-      }
-    }
-  </script>
+      <div class="traffic-row">
+        <div class="traffic-item">
+          <div class="traffic-lbl">↓ Download</div>
+          <div class="traffic-val">52.4 Mbps</div>
+        </div>
+        <div class="traffic-item">
+          <div class="traffic-lbl">↑ Upload</div>
+          <div class="traffic-val">31.2 Mbps</div>
+        </div>
+      </div>
+    </div>
+    <div class="bottom-nav">
+      <div class="nav-btn active">⌂</div>
+      <div class="nav-btn">⚡</div>
+      <div class="nav-btn">👤</div>
+    </div>
+  </div>
+
+  <!-- Screen 3: Servers Selection -->
+  <div class="phone">
+    <div class="phone-bar">
+      <span>9:41</span>
+      <span>📶 🔋</span>
+    </div>
+    <div class="screen-content">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 12px; color: rgba(255,255,255,0.7); cursor: pointer;">‹ Home</span>
+        <span style="font-size: 16px;">🔍</span>
+      </div>
+
+      <div class="servers-hdr">Servers</div>
+
+      <div class="section-lbl">UNLOCKED</div>
+      <div class="server-row active">
+        <span style="font-size: 24px;">🇺🇸</span>
+        <div style="flex: 1;">
+          <div style="font-size: 12px; font-weight: 700;">United States</div>
+          <div style="font-size: 9px; color: rgba(255,255,255,0.35);">Los Angeles, New York, Chicago, Houston</div>
+        </div>
+        <span style="font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.4);">16 ›</span>
+      </div>
+
+      <div class="server-row">
+        <span style="font-size: 24px;">🇩🇪</span>
+        <div style="flex: 1;">
+          <div style="font-size: 12px; font-weight: 700;">Germany</div>
+          <div style="font-size: 9px; color: rgba(255,255,255,0.35);">Berlin, Hamburg, Munich, Cologne, Frankfurt</div>
+        </div>
+        <span style="font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.4);">5 ›</span>
+      </div>
+
+      <div class="section-lbl" style="margin-top: 14px;">LOCKED</div>
+      <div class="server-row">
+        <span style="font-size: 24px;">🇨🇦</span>
+        <div style="flex: 1;">
+          <div style="font-size: 12px; font-weight: 700;">Canada</div>
+          <div style="font-size: 9px; color: rgba(255,255,255,0.35);">12 cities, best ping: 54 ms</div>
+        </div>
+        <div class="price-pill">🔒 $12</div>
+      </div>
+
+      <div class="server-row">
+        <span style="font-size: 24px;">🇮🇪</span>
+        <div style="flex: 1;">
+          <div style="font-size: 12px; font-weight: 700;">Ireland</div>
+          <div style="font-size: 9px; color: rgba(255,255,255,0.35);">5 cities, best ping: 106 ms</div>
+        </div>
+        <div class="price-pill">🔒 $16</div>
+      </div>
+
+      <div class="server-row">
+        <span style="font-size: 24px;">🇬🇪</span>
+        <div style="flex: 1;">
+          <div style="font-size: 12px; font-weight: 700;">Georgia</div>
+          <div style="font-size: 9px; color: rgba(255,255,255,0.35);">4 cities, best ping: 48 ms</div>
+        </div>
+        <div class="price-pill">🔒 $8</div>
+      </div>
+    </div>
+    <div class="bottom-nav">
+      <div class="nav-btn">⌂</div>
+      <div class="nav-btn active">⚡</div>
+      <div class="nav-btn">👤</div>
+    </div>
+  </div>
+
 </body>
 </html>

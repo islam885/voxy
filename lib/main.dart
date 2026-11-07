@@ -70,11 +70,16 @@ class _VoxyHomeScreenState extends State<VoxyHomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.shield_outlined, color: Color(0xFF818CF8)),
-            SizedBox(width: 8),
-            Text(
+            Image.asset(
+              'assets/images/voxy-logo.png',
+              width: 32,
+              height: 32,
+              errorBuilder: (_, __, ___) => const Icon(Icons.shield_outlined, color: Color(0xFF818CF8)),
+            ),
+            const SizedBox(width: 10),
+            const Text(
               'VOXY',
               style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.5),
             ),

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VOXY — Cyber Minimalist (Unbounded Edition)</title>
+  <title>VOXY — Dynamic Proxy & Mixed Client</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -15,23 +15,22 @@
       font-family: 'Unbounded', -apple-system, sans-serif;
     }
     body {
-      background: #474a51;
+      background: #000000;
       color: #f8fafc;
       display: flex;
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      padding: 30px;
-      gap: 30px;
-      flex-wrap: wrap;
+      padding: 24px;
+      overflow: hidden;
     }
     .phone {
-      width: 375px;
-      height: 790px;
+      width: 380px;
+      height: 800px;
       background: #0c0d0e;
-      border-radius: 46px;
+      border-radius: 48px;
       border: 8px solid #1a1c1f;
-      box-shadow: 0 35px 80px rgba(0, 0, 0, 0.7);
+      box-shadow: 0 35px 80px rgba(0, 0, 0, 0.8), 0 0 50px rgba(229, 254, 16, 0.12);
       display: flex;
       flex-direction: column;
       position: relative;
@@ -47,12 +46,20 @@
       font-weight: 700;
       color: #fff;
     }
-    .screen-content {
+    .tab-view {
       flex: 1;
-      display: flex;
+      display: none;
       flex-direction: column;
-      padding: 10px 22px 16px;
+      padding: 10px 22px 14px;
       overflow-y: auto;
+      opacity: 0;
+      transform: translateX(12px);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .tab-view.active {
+      display: flex;
+      opacity: 1;
+      transform: translateX(0);
     }
     .bottom-nav {
       height: 56px;
@@ -61,62 +68,17 @@
       justify-content: space-around;
       align-items: center;
       background: #0c0d0e;
+      z-index: 10;
     }
     .nav-btn {
       color: rgba(255, 255, 255, 0.25);
-      font-size: 20px;
+      font-size: 22px;
       cursor: pointer;
+      transition: all 0.25s ease;
     }
     .nav-btn.active {
       color: #e5fe10;
-    }
-
-    /* Screen 1: Onboarding */
-    .dial-wrap {
-      width: 220px;
-      height: 220px;
-      margin: 40px auto 20px;
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .dial-svg {
-      width: 100%;
-      height: 100%;
-    }
-    .intro-title {
-      font-size: 26px;
-      font-weight: 800;
-      text-align: center;
-      line-height: 1.25;
-      margin-top: 20px;
-    }
-    .intro-desc {
-      font-size: 11px;
-      font-weight: 400;
-      color: rgba(255, 255, 255, 0.45);
-      text-align: center;
-      line-height: 1.6;
-      margin-top: 12px;
-    }
-    .try-btn {
-      width: 100%;
-      height: 52px;
-      background: #e5fe10;
-      border-radius: 26px;
-      border: none;
-      color: #000;
-      font-size: 12px;
-      font-weight: 900;
-      letter-spacing: 1.5px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      cursor: pointer;
-      margin-top: auto;
-      box-shadow: 0 10px 30px rgba(229, 254, 16, 0.35);
+      transform: scale(1.15);
     }
 
     /* Screen 2: Connect */
@@ -129,6 +91,10 @@
       gap: 12px;
       border: 1px solid rgba(255, 255, 255, 0.04);
       cursor: pointer;
+      transition: all 0.2s;
+    }
+    .server-card:hover {
+      background: #191c20;
     }
     .server-flag {
       font-size: 26px;
@@ -139,11 +105,22 @@
     .server-name {
       font-size: 12px;
       font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .proto-badge {
+      background: rgba(229, 254, 16, 0.15);
+      color: #e5fe10;
+      font-size: 8px;
+      font-weight: 900;
+      padding: 2px 5px;
+      border-radius: 4px;
     }
     .server-ip {
       font-size: 10px;
-      font-family: monospace;
       color: rgba(255, 255, 255, 0.35);
+      margin-top: 2px;
     }
     .status-sub {
       display: flex;
@@ -163,7 +140,12 @@
       width: 6px;
       height: 6px;
       border-radius: 50%;
+      background: #64748b;
+      transition: all 0.3s;
+    }
+    .ping-dot.active {
       background: #e5fe10;
+      box-shadow: 0 0 8px #e5fe10;
     }
     .core-power-wrap {
       margin: auto auto;
@@ -175,7 +157,11 @@
       align-items: center;
       justify-content: center;
       position: relative;
-      box-shadow: 0 0 60px rgba(229, 254, 16, 0.25);
+      cursor: pointer;
+      transition: all 0.4s ease;
+    }
+    .core-power-wrap.active {
+      box-shadow: 0 0 70px rgba(229, 254, 16, 0.28);
     }
     .outer-track {
       position: absolute;
@@ -188,19 +174,43 @@
       width: 142px;
       height: 142px;
       border-radius: 50%;
-      background: #e5fe10;
+      background: #1a1c1f;
       border: none;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       z-index: 2;
-      box-shadow: 0 0 25px rgba(229, 254, 16, 0.6);
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .core-power-wrap.active .core-yellow-btn {
+      background: #e5fe10;
+      box-shadow: 0 0 30px rgba(229, 254, 16, 0.6);
+    }
+    .power-icon {
+      width: 60px;
+      height: 60px;
+      stroke: #64748b;
+      stroke-width: 3.2;
+      fill: none;
+      transition: all 0.3s;
+    }
+    .core-power-wrap.active .power-icon {
+      stroke: #000;
+    }
+    .wave-wrap {
+      height: 65px;
+      width: 100%;
+      margin-bottom: 20px;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    .wave-wrap.active {
+      opacity: 1;
     }
     .wave-svg {
       width: 100%;
-      height: 65px;
-      margin-bottom: 20px;
+      height: 100%;
     }
     .traffic-row {
       display: flex;
@@ -225,212 +235,346 @@
       font-weight: 800;
     }
 
-    /* Screen 3: Servers */
-    .servers-hdr {
-      font-size: 26px;
+    /* Screen 3: Categories & Live Proxies */
+    .proxies-hdr {
+      font-size: 24px;
       font-weight: 800;
-      margin: 16px 0 16px;
+      margin: 12px 0 14px;
     }
-    .section-lbl {
-      font-size: 9px;
-      font-weight: 800;
-      letter-spacing: 1.5px;
-      color: rgba(255, 255, 255, 0.35);
-      margin-bottom: 10px;
+    .cat-bar {
+      display: flex;
+      background: #141618;
+      border-radius: 16px;
+      padding: 4px;
+      gap: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      margin-bottom: 16px;
     }
-    .server-row {
+    .cat-tab {
+      flex: 1;
+      text-align: center;
+      padding: 9px 0;
+      font-size: 11px;
+      font-weight: 900;
+      color: rgba(255, 255, 255, 0.45);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+    .cat-tab.active {
+      background: #e5fe10;
+      color: #000;
+    }
+    .proxy-list {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .proxy-row {
       background: #131518;
       border-radius: 16px;
       padding: 12px 14px;
       display: flex;
       align-items: center;
       gap: 12px;
-      margin-bottom: 10px;
       border: 1px solid rgba(255, 255, 255, 0.04);
       cursor: pointer;
+      transition: all 0.25s ease;
+      animation: fadeIn 0.3s ease;
     }
-    .server-row.active {
-      border-color: rgba(229, 254, 16, 0.5);
-      background: #181a1e;
+    .proxy-row.selected {
+      border-color: rgba(229, 254, 16, 0.6);
+      background: #191c20;
     }
-    .price-pill {
-      background: #e5fe10;
-      color: #000;
-      font-size: 10px;
-      font-weight: 900;
-      padding: 5px 10px;
-      border-radius: 14px;
-      display: flex;
-      align-items: center;
-      gap: 4px;
+    .fav-star {
+      font-size: 18px;
+      color: rgba(255, 255, 255, 0.2);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .fav-star.active {
+      color: #e5fe10;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
 <body>
 
-  <!-- Screen 1: Onboarding Dial -->
-  <div class="phone">
-    <div class="phone-bar">
-      <span>9:41</span>
-      <span>EN ▾</span>
-    </div>
-    <div class="screen-content">
-      <div class="dial-wrap">
-        <svg class="dial-svg" viewBox="0 0 200 200">
-          <!-- Geometric compass pointers from screenshot -->
-          <line x1="100" y1="20" x2="100" y2="60" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
-          <line x1="165" y1="60" x2="140" y2="85" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
-          <polyline points="160,65 140,85 155,90" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
-          <line x1="35" y1="60" x2="60" y2="85" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
-          <polyline points="40,65 60,85 45,90" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
-          <line x1="40" y1="140" x2="70" y2="120" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
-          <line x1="160" y1="140" x2="130" y2="120" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
-          <line x1="100" y1="175" x2="100" y2="145" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
-          <polyline points="90,165 100,175 110,165" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
-          <!-- Center Y symbol -->
-          <text x="100" y="106" fill="rgba(255,255,255,0.7)" font-size="14" font-weight="900" text-anchor="middle">Y</text>
-        </svg>
-      </div>
-      <div class="intro-title">Secure. Fast.<br>Stability.</div>
-      <div class="intro-desc">Top-notch security, blazing speed,<br>unwavering stability. Your digital world,<br>protected.</div>
-      
-      <div style="display: flex; justify-content: center; gap: 6px; margin: 24px 0;">
-        <div style="width: 18px; height: 4px; background: #e5fe10; border-radius: 2px;"></div>
-        <div style="width: 4px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 50%;"></div>
-        <div style="width: 4px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 50%;"></div>
-      </div>
-
-      <button class="try-btn">
-        <span>TRY NOW</span>
-        <span>→</span>
-      </button>
-    </div>
-  </div>
-
-  <!-- Screen 2: Active Connection Dashboard -->
   <div class="phone">
     <div class="phone-bar">
       <span>9:41</span>
       <span>📶 🔋</span>
     </div>
-    <div class="screen-content">
-      <div class="server-card">
-        <span class="server-flag">🇺🇸</span>
+
+    <!-- TAB 1: CONNECT SCREEN -->
+    <div id="tab1" class="tab-view active">
+      <div class="server-card" onclick="switchTab(2)">
+        <span id="activeFlag" class="server-flag">🇩🇪</span>
         <div class="server-meta">
-          <div class="server-name">New York, United States</div>
-          <div class="server-ip">92.118.160.102</div>
+          <div class="server-name">
+            <span id="activeEndpoint">176.111.37.216:39811</span>
+            <span id="activeProto" class="proto-badge">HTTP</span>
+          </div>
+          <div id="activeDetails" class="server-ip">Germany • Google: 58ms</div>
         </div>
-        <span style="color: rgba(255,255,255,0.4); font-size: 14px;">›</span>
+        <span style="color: rgba(255,255,255,0.4); font-size: 16px;">›</span>
       </div>
 
       <div class="status-sub">
-        <span>Connected: 1d 8h</span>
+        <span id="timerText">Disconnected</span>
         <div class="ping-tag">
-          <div class="ping-dot"></div>
-          <span>Ping: 24</span>
+          <div id="pingDot" class="ping-dot"></div>
+          <span id="pingText">Ping: 22 ms</span>
         </div>
       </div>
 
-      <div class="core-power-wrap">
+      <div id="powerWrap" class="core-power-wrap" onclick="toggleConnect()">
         <div class="outer-track"></div>
         <button class="core-yellow-btn">
-          <svg style="width: 60px; height: 60px; stroke: #000; stroke-width: 3.5; fill: none;" viewBox="0 0 24 24">
+          <svg class="power-icon" viewBox="0 0 24 24">
             <path stroke-linecap="round" d="M12 2v9M18.36 6.64A9 9 0 1 1 5.64 6.64"/>
           </svg>
         </button>
       </div>
 
-      <!-- High Tech Dual Waves -->
-      <svg class="wave-svg" viewBox="0 0 320 60" preserveAspectRatio="none">
-        <path d="M0,35 Q40,15 80,38 T160,20 T240,40 T320,25" fill="none" stroke="#e5fe10" stroke-width="2"/>
-        <path d="M0,45 Q50,30 100,48 T200,32 T280,48 T320,38" fill="none" stroke="#38bdf8" stroke-width="1.8"/>
-      </svg>
+      <!-- Animated Waves -->
+      <div id="waveWrap" class="wave-wrap">
+        <svg class="wave-svg" viewBox="0 0 320 60" preserveAspectRatio="none">
+          <path id="w1" d="M0,35 Q40,15 80,38 T160,20 T240,40 T320,25" fill="none" stroke="#e5fe10" stroke-width="2"/>
+          <path id="w2" d="M0,45 Q50,30 100,48 T200,32 T280,48 T320,38" fill="none" stroke="#38bdf8" stroke-width="1.8"/>
+        </svg>
+      </div>
 
       <div class="traffic-row">
         <div class="traffic-item">
           <div class="traffic-lbl">↓ Download</div>
-          <div class="traffic-val">52.4 Mbps</div>
+          <div id="downVal" class="traffic-val">0.0 Mbps</div>
         </div>
         <div class="traffic-item">
           <div class="traffic-lbl">↑ Upload</div>
-          <div class="traffic-val">31.2 Mbps</div>
+          <div id="upVal" class="traffic-val">0.0 Mbps</div>
         </div>
       </div>
     </div>
-    <div class="bottom-nav">
-      <div class="nav-btn active">⌂</div>
-      <div class="nav-btn">⚡</div>
-      <div class="nav-btn">👤</div>
-    </div>
-  </div>
 
-  <!-- Screen 3: Servers Selection -->
-  <div class="phone">
-    <div class="phone-bar">
-      <span>9:41</span>
-      <span>📶 🔋</span>
-    </div>
-    <div class="screen-content">
+    <!-- TAB 2: PROXY POOLS (HTTP, SOCKS4, SOCKS5) -->
+    <div id="tab2" class="tab-view">
       <div style="display: flex; justify-content: space-between; align-items: center;">
-        <span style="font-size: 12px; color: rgba(255,255,255,0.7); cursor: pointer;">‹ Home</span>
-        <span style="font-size: 16px;">🔍</span>
+        <span style="font-size: 12px; color: rgba(255,255,255,0.7); cursor: pointer;" onclick="switchTab(1)">‹ Home</span>
+        <span style="font-size: 15px; cursor: pointer;" onclick="refreshProxies()">🔄</span>
       </div>
 
-      <div class="servers-hdr">Servers</div>
+      <div class="proxies-hdr">Proxy Pools</div>
 
-      <div class="section-lbl">UNLOCKED</div>
-      <div class="server-row active">
-        <span style="font-size: 24px;">🇺🇸</span>
-        <div style="flex: 1;">
-          <div style="font-size: 12px; font-weight: 700;">United States</div>
-          <div style="font-size: 9px; color: rgba(255,255,255,0.35);">Los Angeles, New York, Chicago, Houston</div>
-        </div>
-        <span style="font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.4);">16 ›</span>
+      <div class="cat-bar">
+        <div id="cat-http" class="cat-tab active" onclick="switchCategory('http')">HTTP</div>
+        <div id="cat-socks4" class="cat-tab" onclick="switchCategory('socks4')">SOCKS4</div>
+        <div id="cat-socks5" class="cat-tab" onclick="switchCategory('socks5')">SOCKS5</div>
       </div>
 
-      <div class="server-row">
-        <span style="font-size: 24px;">🇩🇪</span>
-        <div style="flex: 1;">
-          <div style="font-size: 12px; font-weight: 700;">Germany</div>
-          <div style="font-size: 9px; color: rgba(255,255,255,0.35);">Berlin, Hamburg, Munich, Cologne, Frankfurt</div>
-        </div>
-        <span style="font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.4);">5 ›</span>
-      </div>
-
-      <div class="section-lbl" style="margin-top: 14px;">LOCKED</div>
-      <div class="server-row">
-        <span style="font-size: 24px;">🇨🇦</span>
-        <div style="flex: 1;">
-          <div style="font-size: 12px; font-weight: 700;">Canada</div>
-          <div style="font-size: 9px; color: rgba(255,255,255,0.35);">12 cities, best ping: 54 ms</div>
-        </div>
-        <div class="price-pill">🔒 $12</div>
-      </div>
-
-      <div class="server-row">
-        <span style="font-size: 24px;">🇮🇪</span>
-        <div style="flex: 1;">
-          <div style="font-size: 12px; font-weight: 700;">Ireland</div>
-          <div style="font-size: 9px; color: rgba(255,255,255,0.35);">5 cities, best ping: 106 ms</div>
-        </div>
-        <div class="price-pill">🔒 $16</div>
-      </div>
-
-      <div class="server-row">
-        <span style="font-size: 24px;">🇬🇪</span>
-        <div style="flex: 1;">
-          <div style="font-size: 12px; font-weight: 700;">Georgia</div>
-          <div style="font-size: 9px; color: rgba(255,255,255,0.35);">4 cities, best ping: 48 ms</div>
-        </div>
-        <div class="price-pill">🔒 $8</div>
+      <div id="proxyContainer" class="proxy-list">
+        <!-- Rendered via JavaScript from monosans raw list -->
       </div>
     </div>
+
     <div class="bottom-nav">
-      <div class="nav-btn">⌂</div>
-      <div class="nav-btn active">⚡</div>
-      <div class="nav-btn">👤</div>
+      <div id="nav1" class="nav-btn active" onclick="switchTab(1)">⌂</div>
+      <div id="nav2" class="nav-btn" onclick="switchTab(2)">⚡</div>
     </div>
   </div>
 
+  <script>
+    let activeCategory = 'http';
+    let isConnected = false;
+    let sec = 0;
+    let timerInt = null;
+    let trafficInt = null;
+    let waveAnim = null;
+    let waveOffset = 0;
+
+    let selectedProxy = {
+      endpoint: '176.111.37.216:39811',
+      proto: 'HTTP',
+      flag: '🇩🇪',
+      country: 'Germany',
+      ping: 22,
+      google: 58
+    };
+
+    let favorites = new Set(JSON.parse(localStorage.getItem('voxy_favs') || '[]'));
+
+    // Cache of proxies fetched from raw github
+    const proxyCache = {
+      http: [],
+      socks4: [],
+      socks5: []
+    };
+
+    async function fetchRaw(cat) {
+      try {
+        const res = await fetch(`https://github.com/monosans/proxy-list/raw/refs/heads/main/proxies/${cat}.txt`);
+        const text = await res.text();
+        const lines = text.split('\n').filter(l => l.includes(':'));
+        const flags = [
+          { f: '🇩🇪', c: 'Germany' },
+          { f: '🇺🇸', c: 'United States' },
+          { f: '🇳🇱', c: 'Netherlands' },
+          { f: '🇫🇮', c: 'Finland' },
+          { f: '🇵🇱', c: 'Poland' }
+        ];
+
+        proxyCache[cat] = lines.slice(0, 50).map((endpoint, i) => {
+          const item = flags[i % flags.length];
+          return {
+            endpoint: endpoint.trim(),
+            proto: cat.toUpperCase(),
+            flag: item.f,
+            country: item.c,
+            ping: 16 + (i * 3) % 45,
+            google: cat === 'http' ? 45 + (i * 7) % 65 : 0
+          };
+        });
+      } catch (e) {
+        // Fallback demo items
+        proxyCache[cat] = [
+          { endpoint: '185.190.140.12:3128', proto: cat.toUpperCase(), flag: '🇩🇪', country: 'Germany', ping: 18, google: 54 },
+          { endpoint: '45.134.225.88:8080', proto: cat.toUpperCase(), flag: '🇳🇱', country: 'Netherlands', ping: 21, google: 62 },
+          { endpoint: '95.216.14.33:1080', proto: cat.toUpperCase(), flag: '🇫🇮', country: 'Finland', ping: 27, google: 71 },
+          { endpoint: '193.33.111.4:9090', proto: cat.toUpperCase(), flag: '🇵🇱', country: 'Poland', ping: 24, google: 59 },
+          { endpoint: '92.118.160.102:443', proto: cat.toUpperCase(), flag: '🇺🇸', country: 'United States', ping: 35, google: 84 },
+        ];
+      }
+      renderProxies();
+    }
+
+    function renderProxies() {
+      const container = document.getElementById('proxyContainer');
+      const list = proxyCache[activeCategory];
+      container.innerHTML = '';
+
+      list.forEach(p => {
+        const isSel = p.endpoint === selectedProxy.endpoint;
+        const isFav = favorites.has(p.endpoint);
+
+        const row = document.createElement('div');
+        row.className = `proxy-row ${isSel ? 'selected' : ''}`;
+        row.innerHTML = `
+          <span style="font-size: 24px;">${p.flag}</span>
+          <div style="flex: 1;">
+            <div style="font-size: 12px; font-weight: 800; color: #fff;">${p.endpoint}</div>
+            <div style="font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 2px;">
+              ${p.country} • Ping: ${p.ping}ms ${p.google > 0 ? `• Google: ${p.google}ms` : ''}
+            </div>
+          </div>
+          <span class="fav-star ${isFav ? 'active' : ''}" onclick="toggleFav(event, '${p.endpoint}')">★</span>
+          <span style="font-size: 16px; color: rgba(255,255,255,0.3);">›</span>
+        `;
+        row.onclick = () => selectProxy(p);
+        container.appendChild(row);
+      });
+    }
+
+    function selectProxy(p) {
+      selectedProxy = p;
+      localStorage.setItem('voxy_active_proxy', JSON.stringify(p));
+      document.getElementById('activeEndpoint').innerText = p.endpoint;
+      document.getElementById('activeProto').innerText = p.proto;
+      document.getElementById('activeFlag').innerText = p.flag;
+      document.getElementById('activeDetails').innerText = `${p.country} • Google: ${p.google > 0 ? p.google + 'ms' : 'OK'}`;
+      document.getElementById('pingText').innerText = `Ping: ${p.ping} ms`;
+      switchTab(1);
+    }
+
+    function toggleFav(e, endpoint) {
+      e.stopPropagation();
+      if (favorites.has(endpoint)) favorites.delete(endpoint);
+      else favorites.add(endpoint);
+      localStorage.setItem('voxy_favs', JSON.stringify([...favorites]));
+      renderProxies();
+    }
+
+    function switchCategory(cat) {
+      activeCategory = cat;
+      ['http', 'socks4', 'socks5'].forEach(c => {
+        document.getElementById(`cat-${c}`).classList.toggle('active', c === cat);
+      });
+      if (proxyCache[cat].length === 0) fetchRaw(cat);
+      else renderProxies();
+    }
+
+    function refreshProxies() {
+      fetchRaw(activeCategory);
+    }
+
+    function switchTab(num) {
+      if (num === 1 && document.getElementById('tab2').classList.contains('active')) {
+        // Refresh upon leaving tab as requested
+        fetchRaw(activeCategory);
+      }
+      document.getElementById('tab1').classList.toggle('active', num === 1);
+      document.getElementById('tab2').classList.toggle('active', num === 2);
+      document.getElementById('nav1').classList.toggle('active', num === 1);
+      document.getElementById('nav2').classList.toggle('active', num === 2);
+    }
+
+    function toggleConnect() {
+      isConnected = !isConnected;
+      const wrap = document.getElementById('powerWrap');
+      const dot = document.getElementById('pingDot');
+      const waves = document.getElementById('waveWrap');
+      const timer = document.getElementById('timerText');
+      const down = document.getElementById('downVal');
+      const up = document.getElementById('upVal');
+
+      if (isConnected) {
+        wrap.classList.add('active');
+        dot.classList.add('active');
+        waves.classList.add('active');
+
+        sec = 0;
+        timerInt = setInterval(() => {
+          sec++;
+          const m = String(Math.floor(sec / 60)).padStart(2, '0');
+          const s = String(sec % 60).padStart(2, '0');
+          timer.innerText = `Connected: ${m}:${s}`;
+        }, 1000);
+
+        trafficInt = setInterval(() => {
+          down.innerText = (42.0 + Math.random() * 24).toFixed(1) + ' Mbps';
+          up.innerText = (18.0 + Math.random() * 14).toFixed(1) + ' Mbps';
+        }, 1400);
+
+        animateWaves();
+      } else {
+        wrap.classList.remove('active');
+        dot.classList.remove('active');
+        waves.classList.remove('active');
+        timer.innerText = 'Disconnected';
+        down.innerText = '0.0 Mbps';
+        up.innerText = '0.0 Mbps';
+        clearInterval(timerInt);
+        clearInterval(trafficInt);
+        cancelAnimationFrame(waveAnim);
+      }
+    }
+
+    function animateWaves() {
+      if (!isConnected) return;
+      waveOffset += 0.04;
+      const y1 = Math.sin(waveOffset) * 6;
+      const y2 = Math.cos(waveOffset) * 5;
+      document.getElementById('w1').setAttribute('d', `M0,${35+y1} Q40,${15-y1} 80,${38+y2} T160,${20+y1} T240,${40-y2} T320,${25+y1}`);
+      document.getElementById('w2').setAttribute('d', `M0,${45-y2} Q50,${30+y1} 100,${48-y1} T200,${32+y2} T280,${48-y1} T320,${38+y2}`);
+      waveAnim = requestAnimationFrame(animateWaves);
+    }
+
+    // Init
+    fetchRaw('http');
+  </script>
 </body>
 </html>

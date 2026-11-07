@@ -425,17 +425,21 @@
           { f: '🇺🇸', c: 'United States' },
           { f: '🇳🇱', c: 'Netherlands' },
           { f: '🇫🇮', c: 'Finland' },
-          { f: '🇵🇱', c: 'Poland' }
+          { f: '🇵🇱', c: 'Poland' },
+          { f: '🇫🇷', c: 'France' },
+          { f: '🇬🇧', c: 'United Kingdom' },
+          { f: '🇯🇵', c: 'Japan' },
+          { f: '🇸🇬', c: 'Singapore' }
         ];
 
-        proxyCache[cat] = lines.slice(0, 50).map((endpoint, i) => {
+        proxyCache[cat] = lines.map((endpoint, i) => {
           const item = flags[i % flags.length];
           return {
             endpoint: endpoint.trim(),
             proto: cat.toUpperCase(),
             flag: item.f,
             country: item.c,
-            ping: 16 + (i * 3) % 45,
+            ping: 15 + (i * 3) % 45,
             google: cat === 'http' ? 45 + (i * 7) % 65 : 0
           };
         });

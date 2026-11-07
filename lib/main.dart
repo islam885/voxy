@@ -184,8 +184,8 @@ class _VoxyMainScreenState extends State<VoxyMainScreen>
           {'name': 'France', 'flag': '🇫🇷'},
         ];
 
-        // Parse first 100 items for silky performance and fast checking
-        for (var i = 0; i < math.min(lines.length, 120); i++) {
+        // Parse thousands of items from raw list
+        for (var i = 0; i < lines.length; i++) {
           final line = lines[i].trim();
           if (line.isEmpty || !line.contains(':')) continue;
           final parts = line.split(':');

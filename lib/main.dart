@@ -138,62 +138,29 @@ class _VoxyHomeScreenState extends State<VoxyHomeScreen>
                       Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.all(8),
+                            padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
                               color: const Color(0xFF0B0E14),
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(12),
                               border: Border.all(color: Colors.white.withOpacity(0.08)),
                             ),
                             child: Image.asset(
                               'assets/images/voxy-logo.png',
-                              width: 28,
-                              height: 28,
+                              width: 26,
+                              height: 26,
                               errorBuilder: (_, __, ___) =>
                                   const Icon(Icons.shield_rounded, color: Color(0xFF6366F1), size: 26),
                             ),
                           ),
                           const SizedBox(width: 12),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'VOXY',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 3,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              Row(
-                                children: [
-                                  Text(
-                                    'v1.0.0',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.white.withOpacity(0.35),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFF1E293B),
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: const Text(
-                                      'CORE READY',
-                                      style: TextStyle(
-                                        fontSize: 8,
-                                        fontWeight: FontWeight.w800,
-                                        color: Color(0xFF38BDF8),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                          const Text(
+                            'VOXY',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 3,
+                              color: Colors.white,
+                            ),
                           ),
                         ],
                       ),
@@ -245,7 +212,7 @@ class _VoxyHomeScreenState extends State<VoxyHomeScreen>
                             ),
                             const SizedBox(width: 10),
                             Text(
-                              _isConnected ? 'PROTECTED • TUNNEL ACTIVE' : 'SYSTEM DISCONNECTED',
+                              _isConnected ? 'CONNECTED' : 'DISCONNECTED',
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w800,

@@ -415,9 +415,15 @@
       socks5: []
     };
 
+    const PROXY_URLS = {
+      http: 'https://raw.githubusercontent.com/islam885/voxy/main/proxies/http.txt',
+      socks4: 'https://raw.githubusercontent.com/islam885/voxy/main/proxies/socks4.txt',
+      socks5: 'https://raw.githubusercontent.com/islam885/voxy/main/proxies/socks5.txt'
+    };
+
     async function fetchRaw(cat) {
       try {
-        const res = await fetch(`https://github.com/monosans/proxy-list/raw/refs/heads/main/proxies/${cat}.txt`);
+        const res = await fetch(PROXY_URLS[cat]);
         const text = await res.text();
         const lines = text.split('\n').filter(l => l.includes(':'));
         const flags = [

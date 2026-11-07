@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'proxy_config.dart';
 
 const MethodChannel _vpnChannel = MethodChannel('com.voxy.client/vpn');
 
@@ -161,12 +162,11 @@ class _VoxyMainScreenState extends State<VoxyMainScreen>
     await prefs.setStringList('voxy_favorites', _favoriteEndpoints.toList());
   }
 
-  // Fetch from raw monosans proxy-list
+  // Fetch from our repo raw proxy-list
   Future<void> _fetchProxyList(String category) async {
     setState(() => _isLoadingProxies = true);
     try {
-      final url =
-          'https://github.com/monosans/proxy-list/raw/refs/heads/main/proxies/$category.txt';
+      final url = ProxyConfig.getUrlForCategory(category);
       final response = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 8));
       if (response.statusCode == 200) {
         final lines = const LineSplitter().convert(response.body);

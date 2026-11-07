@@ -9,10 +9,9 @@ import android.net.VpnService
 import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.util.Log
-import java.io.FileInputStream
+import hev.htproxy.TProxyService
+import java.io.File
 import java.io.FileOutputStream
-import java.net.InetSocketAddress
-import java.nio.ByteBuffer
 import java.util.concurrent.atomic.AtomicBoolean
 
 class VoxyVpnService : VpnService() {
@@ -28,7 +27,6 @@ class VoxyVpnService : VpnService() {
 
     private var vpnInterface: ParcelFileDescriptor? = null
     private val isStopping = AtomicBoolean(false)
-    private var workerThread: Thread? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val action = intent?.action
@@ -53,13 +51,13 @@ class VoxyVpnService : VpnService() {
         isStopping.set(false)
 
         try {
-            // Build the virtual network TUN interface (10.0.0.2/24)
+            // 1. Establish Virtual TUN interface
             val builder = Builder()
                 .setSession("Voxy Secure Tunnel")
                 .addAddress("10.0.0.2", 24)
                 .addDnsServer("1.1.1.1")
                 .addDnsServer("8.8.8.8")
-                .addRoute("0.0.0.0", 0) // Intercept all IP traffic
+                .addRoute("0.0.0.0", 0) // Capture all IPv4 traffic
                 .setMtu(1500)
                 .setBlocking(false)
 
@@ -68,33 +66,47 @@ class VoxyVpnService : VpnService() {
             }
 
             vpnInterface = builder.establish()
-            isRunning = true
+            val tunFd = vpnInterface?.fd ?: -1
 
-            // Forwarding loop / TUN reader
-            workerThread = Thread {
-                val vpnFd = vpnInterface?.fileDescriptor
-                if (vpnFd == null) return@Thread
-
-                val `in` = FileInputStream(vpnFd)
-                val out = FileOutputStream(vpnFd)
-                val buffer = ByteArray(32768)
-
-                Log.i("VoxyVPN", "TUN interface active, forwarding packets through $proxyProto: $proxyIp:$proxyPort")
-
-                while (!isStopping.get()) {
-                    try {
-                        val length = `in`.read(buffer)
-                        if (length > 0) {
-                            // Packet processing & proxy translation loop
-                        } else {
-                            Thread.sleep(10)
-                        }
-                    } catch (e: Exception) {
-                        break
-                    }
-                }
+            if (tunFd < 0) {
+                Log.e("VoxyVPN", "Failed to get valid TUN file descriptor")
+                disconnect()
+                return
             }
-            workerThread?.start()
+
+            // 2. Generate hev-socks5-tunnel yaml configuration
+            val configFile = File(cacheDir, "tun2socks.yml")
+            val configContent = """
+tunnel:
+  name: tun0
+  mtu: 1500
+  ipv4: 10.0.0.2
+
+socks5:
+  port: $proxyPort
+  address: '$proxyIp'
+  udp: 'tcp'
+
+misc:
+  task-stack-size: 81920
+  connect-timeout: 5000
+  read-write-timeout: 60000
+  log-level: 'warn'
+""".trimIndent()
+
+            FileOutputStream(configFile).use { it.write(configContent.toByteArray()) }
+
+            // 3. Start native tun2socks C/Go core
+            Thread {
+                try {
+                    Log.i("VoxyVPN", "Starting native TProxyService engine with fd=$tunFd and config=${configFile.absolutePath}")
+                    TProxyService.TProxyStartService(configFile.absolutePath, tunFd)
+                } catch (t: Throwable) {
+                    Log.e("VoxyVPN", "TProxyService native engine error", t)
+                }
+            }.start()
+
+            isRunning = true
 
         } catch (e: Exception) {
             Log.e("VoxyVPN", "Error establishing TUN interface", e)
@@ -107,8 +119,12 @@ class VoxyVpnService : VpnService() {
         isRunning = false
 
         try {
-            workerThread?.interrupt()
-            workerThread = null
+            TProxyService.TProxyStopService()
+        } catch (t: Throwable) {
+            Log.e("VoxyVPN", "Error stopping native TProxy engine", t)
+        }
+
+        try {
             vpnInterface?.close()
             vpnInterface = null
         } catch (e: Exception) {
@@ -160,4 +176,3 @@ class VoxyVpnService : VpnService() {
             .build()
     }
 }
-

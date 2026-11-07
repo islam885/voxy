@@ -96,6 +96,11 @@ class _VoxyMainScreenState extends State<VoxyMainScreen> with TickerProviderStat
   double _downloadSpeed = 0.0;
   double _uploadSpeed = 0.0;
 
+  // Real traffic bytes tracker
+  int _lastRxBytes = 0;
+  int _lastTxBytes = 0;
+  DateTime _lastTrafficTime = DateTime.now();
+
   late AnimationController _waveController;
 
   @override
@@ -310,18 +315,46 @@ class _VoxyMainScreenState extends State<VoxyMainScreen> with TickerProviderStat
           setState(() {
             _isConnected = true;
             _sessionSeconds = 0;
+            _lastRxBytes = 0;
+            _lastTxBytes = 0;
+            _lastTrafficTime = DateTime.now();
+
             _sessionTimer?.cancel();
             _sessionTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
               setState(() => _sessionSeconds++);
             });
 
+            // Real-time Traffic Telemetry Poll (Every 1000ms)
             _metricsTimer?.cancel();
-            final rand = math.Random();
-            _metricsTimer = Timer.periodic(const Duration(milliseconds: 1400), (timer) {
-              setState(() {
-                _downloadSpeed = 42.0 + rand.nextDouble() * 24.0;
-                _uploadSpeed = 22.0 + rand.nextDouble() * 14.0;
-              });
+            _metricsTimer = Timer.periodic(const Duration(milliseconds: 1000), (timer) async {
+              try {
+                final Map<dynamic, dynamic>? res =
+                    await _vpnChannel.invokeMethod('getTrafficStats');
+                if (res != null) {
+                  final int currentTx = (res['txBytes'] as num?)?.toInt() ?? 0;
+                  final int currentRx = (res['rxBytes'] as num?)?.toInt() ?? 0;
+                  final now = DateTime.now();
+                  final double elapsedSec = now.difference(_lastTrafficTime).inMilliseconds / 1000.0;
+
+                  if (elapsedSec > 0 && _lastRxBytes > 0) {
+                    final diffRx = (currentRx - _lastRxBytes).clamp(0, 1000000000);
+                    final diffTx = (currentTx - _lastTxBytes).clamp(0, 1000000000);
+
+                    // Convert to Mbps: (bytes * 8) / (1024 * 1024 * elapsedSec)
+                    final downMbps = (diffRx * 8.0) / (1024.0 * 1024.0 * elapsedSec);
+                    final upMbps = (diffTx * 8.0) / (1024.0 * 1024.0 * elapsedSec);
+
+                    setState(() {
+                      _downloadSpeed = downMbps;
+                      _uploadSpeed = upMbps;
+                    });
+                  }
+
+                  _lastRxBytes = currentRx;
+                  _lastTxBytes = currentTx;
+                  _lastTrafficTime = now;
+                }
+              } catch (_) {}
             });
           });
         }
@@ -596,7 +629,12 @@ class _VoxyMainScreenState extends State<VoxyMainScreen> with TickerProviderStat
                 height: 75,
                 width: double.infinity,
                 child: CustomPaint(
-                  painter: SineWavePainter(active: _isConnected, phase: _waveController.value * 2 * math.pi),
+                  painter: SineWavePainter(
+                    active: _isConnected,
+                    phase: _waveController.value * 2 * math.pi,
+                    downSpeed: _downloadSpeed,
+                    upSpeed: _uploadSpeed,
+                  ),
                 ),
               );
             },
@@ -1008,25 +1046,50 @@ class GeometricDialPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-// Sine Wave Painter
+// Sine Wave Painter with dynamic amplitude bound to real Mbps
 class SineWavePainter extends CustomPainter {
   final bool active;
   final double phase;
-  SineWavePainter({required this.active, required this.phase});
+  final double downSpeed;
+  final double upSpeed;
+
+  SineWavePainter({
+    required this.active,
+    required this.phase,
+    this.downSpeed = 0.0,
+    this.upSpeed = 0.0,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
     if (!active) return;
 
-    final yellowPaint = Paint()..color = const Color(0xFFE5FE10)..strokeWidth = 1.8..style = PaintingStyle.stroke;
-    final bluePaint = Paint()..color = const Color(0xFF38BDF8)..strokeWidth = 1.6..style = PaintingStyle.stroke;
+    // Amplitude grows with real network speed (base 3px + up to 16px based on Mbps)
+    final double yellowAmp = 3.0 + (downSpeed.clamp(0.0, 100.0) / 100.0) * 16.0;
+    final double blueAmp = 2.5 + (upSpeed.clamp(0.0, 100.0) / 100.0) * 14.0;
+
+    final yellowPaint = Paint()
+      ..color = const Color(0xFFE5FE10)
+      ..strokeWidth = 2.0
+      ..style = PaintingStyle.stroke;
+
+    final bluePaint = Paint()
+      ..color = const Color(0xFF38BDF8)
+      ..strokeWidth = 1.6
+      ..style = PaintingStyle.stroke;
 
     final yPath = Path();
     final bPath = Path();
 
     for (double x = 0; x <= size.width; x += 4) {
-      final y1 = (size.height * 0.45) + math.sin((x * 0.04) + phase) * 8 + math.cos((x * 0.08) + phase) * 6;
-      final y2 = (size.height * 0.55) + math.cos((x * 0.035) + phase) * 7 + math.sin((x * 0.07) + phase) * 5;
+      final y1 = (size.height * 0.45) +
+          math.sin((x * 0.04) + phase) * yellowAmp +
+          math.cos((x * 0.08) + phase) * (yellowAmp * 0.6);
+
+      final y2 = (size.height * 0.55) +
+          math.cos((x * 0.035) + phase) * blueAmp +
+          math.sin((x * 0.07) + phase) * (blueAmp * 0.5);
+
       if (x == 0) {
         yPath.moveTo(x, y1);
         bPath.moveTo(x, y2);
@@ -1041,5 +1104,9 @@ class SineWavePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant SineWavePainter oldDelegate) => oldDelegate.active != active || oldDelegate.phase != phase;
+  bool shouldRepaint(covariant SineWavePainter oldDelegate) =>
+      oldDelegate.active != active ||
+      oldDelegate.phase != phase ||
+      oldDelegate.downSpeed != downSpeed ||
+      oldDelegate.upSpeed != upSpeed;
 }

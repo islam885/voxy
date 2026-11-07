@@ -23,6 +23,18 @@ class VoxyVpnService : VpnService() {
         const val NOTIFICATION_ID = 1001
 
         var isRunning = false
+
+        fun getTrafficStats(): LongArray {
+            return try {
+                if (isRunning) {
+                    TProxyService.TProxyGetStats() ?: longArrayOf(0L, 0L)
+                } else {
+                    longArrayOf(0L, 0L)
+                }
+            } catch (t: Throwable) {
+                longArrayOf(0L, 0L)
+            }
+        }
     }
 
     private var vpnInterface: ParcelFileDescriptor? = null

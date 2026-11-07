@@ -56,6 +56,15 @@ class MainActivity: FlutterActivity() {
                 "isRunning" -> {
                     result.success(VoxyVpnService.isRunning)
                 }
+                "getTrafficStats" -> {
+                    val stats = VoxyVpnService.getTrafficStats()
+                    // stats[0] = tx/upload bytes, stats[1] = rx/download bytes
+                    val map = mapOf(
+                        "txBytes" to if (stats.isNotEmpty()) stats[0] else 0L,
+                        "rxBytes" to if (stats.size > 1) stats[1] else 0L
+                    )
+                    result.success(map)
+                }
                 else -> {
                     result.notImplemented()
                 }

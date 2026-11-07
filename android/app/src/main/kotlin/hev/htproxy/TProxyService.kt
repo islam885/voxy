@@ -16,3 +16,4 @@ class TProxyService {
         external fun TProxyGetStats(): LongArray
     }
 }
+

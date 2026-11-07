@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voxy Web Preview</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+    body {
+      background: #020617;
+      color: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .mockup-container {
+      width: 380px;
+      height: 780px;
+      background: #0f172a;
+      border-radius: 44px;
+      border: 8px solid #1e293b;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(99, 102, 241, 0.2);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+    .notch {
+      width: 140px;
+      height: 24px;
+      background: #1e293b;
+      margin: 0 auto;
+      border-bottom-left-radius: 16px;
+      border-bottom-right-radius: 16px;
+    }
+    .header {
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: #818cf8;
+    }
+    .status-bar {
+      margin: 12px 24px;
+      padding: 12px 16px;
+      background: #1e293b;
+      border-radius: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #64748b;
+      transition: all 0.3s;
+    }
+    .dot.active {
+      background: #10b981;
+      box-shadow: 0 0 10px #10b981;
+    }
+    .main-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0 24px;
+    }
+    .power-btn {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #334155, #1e293b);
+      border: none;
+      outline: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+      transition: all 0.3s ease;
+    }
+    .power-btn.active {
+      background: linear-gradient(135deg, #059669, #10b981);
+      box-shadow: 0 0 40px rgba(16, 185, 129, 0.5);
+    }
+    .power-icon {
+      font-size: 68px;
+      color: #94a3b8;
+      transition: all 0.3s;
+    }
+    .power-btn.active .power-icon {
+      color: #ffffff;
+    }
+    .connect-label {
+      margin-top: 16px;
+      color: #94a3b8;
+      font-size: 13px;
+    }
+    .selectors {
+      padding: 20px 24px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .card {
+      background: #1e293b;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+    .card:hover {
+      background: #273549;
+    }
+    .badge {
+      background: rgba(16, 185, 129, 0.15);
+      color: #10b981;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <div class="mockup-container">
+    <div class="notch"></div>
+    <div class="header">
+      <div class="brand">🛡️ VOXY</div>
+      <div style="color: #94a3b8; cursor: pointer;">⚙️</div>
+    </div>
+
+    <div class="status-bar">
+      <div class="status-indicator">
+        <div id="dot" class="dot"></div>
+        <span id="status-text" style="color: #64748b;">DISCONNECTED</span>
+      </div>
+      <span id="timer" style="color: #64748b;">--:--:--</span>
+    </div>
+
+    <div class="main-body">
+      <button id="btn" class="power-btn" onclick="toggle()">
+        <span class="power-icon">⏻</span>
+      </button>
+      <div id="label" class="connect-label">Tap to Connect</div>
+    </div>
+
+    <div class="selectors">
+      <div class="card">
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <span>🔒</span>
+          <span style="font-size: 13px; font-weight: 600;">Mixed (Proxy + TUN)</span>
+        </div>
+        <span style="color: #64748b; font-size: 12px;">▼</span>
+      </div>
+      <div class="card">
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <span style="font-size: 20px;">🇩🇪</span>
+          <div>
+            <div style="font-size: 10px; color: #64748b;">SELECTED LOCATION</div>
+            <div style="font-size: 13px; font-weight: 600;">Frankfurt • DE-01</div>
+          </div>
+        </div>
+        <span class="badge">18ms</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let active = false;
+    let sec = 0;
+    let timerId = null;
+
+    function toggle() {
+      active = !active;
+      const btn = document.getElementById('btn');
+      const dot = document.getElementById('dot');
+      const text = document.getElementById('status-text');
+      const label = document.getElementById('label');
+      const timer = document.getElementById('timer');
+
+      if (active) {
+        btn.classList.add('active');
+        dot.classList.add('active');
+        text.innerText = 'PROTECTED (TUNNEL ACTIVE)';
+        text.style.color = '#10b981';
+        label.innerText = 'Tap to Disconnect';
+        timerId = setInterval(() => {
+          sec++;
+          const m = String(Math.floor(sec / 60)).padStart(2, '0');
+          const s = String(sec % 60).padStart(2, '0');
+          timer.innerText = `00:${m}:${s}`;
+          timer.style.color = '#f8fafc';
+        }, 1000);
+      } else {
+        btn.classList.remove('active');
+        dot.classList.remove('active');
+        text.innerText = 'DISCONNECTED';
+        text.style.color = '#64748b';
+        label.innerText = 'Tap to Connect';
+        clearInterval(timerId);
+        sec = 0;
+        timer.innerText = '--:--:--';
+        timer.style.color = '#64748b';
+      }
+    }
+  </script>
+</body>
+</html>

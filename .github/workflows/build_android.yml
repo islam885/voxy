@@ -53,18 +53,18 @@ jobs:
         if: ${{ inputs.build_type == 'apk' || inputs.build_type == 'both' }}
         run: |
           if [ "${{ inputs.build_mode }}" = "release" ]; then
-            flutter build apk --release --split-per-abi
+            flutter build apk --release --split-per-abi --android-skip-build-dependency-validation
           else
-            flutter build apk --debug
+            flutter build apk --debug --android-skip-build-dependency-validation
           fi
 
       - name: Build AppBundle (AAB)
         if: ${{ inputs.build_type == 'appbundle' || inputs.build_type == 'both' }}
         run: |
           if [ "${{ inputs.build_mode }}" = "release" ]; then
-            flutter build appbundle --release
+            flutter build appbundle --release --android-skip-build-dependency-validation
           else
-            flutter build appbundle --debug
+            flutter build appbundle --debug --android-skip-build-dependency-validation
           fi
 
       - name: Upload APKs

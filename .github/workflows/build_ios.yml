@@ -1,0 +1,63 @@
+name: Build iOS
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_mode:
+        description: 'Build Mode'
+        required: true
+        default: 'release'
+        type: choice
+        options:
+          - release
+          - debug
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build_ios:
+    name: Build iOS IPA
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Get Dependencies
+        run: flutter pub get
+
+      - name: Build iOS Application (No Codesign)
+        run: |
+          if [ "${{ inputs.build_mode }}" = "release" ]; then
+            flutter build ios --release --no-codesign
+          else
+            flutter build ios --debug --no-codesign
+          fi
+
+      - name: Package Payload into unsigned IPA
+        run: |
+          mkdir -p Payload
+          APP_DIR=$(find build/ios/iphoneos -name "*.app" -type d | head -n 1)
+          if [ -z "$APP_DIR" ]; then
+            echo "Error: .app directory not found"
+            exit 1
+          fi
+          echo "Found app at: $APP_DIR"
+          cp -r "$APP_DIR" Payload/
+          zip -r voxy-ios-${{ inputs.build_mode }}-unsigned.ipa Payload
+          rm -rf Payload
+
+      - name: Upload iOS IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: voxy-ios-${{ inputs.build_mode }}-ipa
+          path: voxy-ios-*-unsigned.ipa
+          retention-days: 14

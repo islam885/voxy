@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 void main() {
@@ -12,17 +13,15 @@ class VoxyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Voxy',
       debugShowCheckedModeBanner: false,
-      themeMode: ThemeMode.dark,
       theme: ThemeData(
-        brightness: Brightness.light,
-        colorSchemeSeed: const Color(0xFF6366F1),
-        useMaterial3: true,
-      ),
-      darkTheme: ThemeData(
         brightness: Brightness.dark,
-        colorSchemeSeed: const Color(0xFF6366F1),
-        scaffoldBackgroundColor: const Color(0xFF0F172A),
-        cardColor: const Color(0xFF1E293B),
+        scaffoldBackgroundColor: const Color(0xFF030305),
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFF6366F1),
+          secondary: Color(0xFF38BDF8),
+          surface: Color(0xFF0A0C10),
+          background: Color(0xFF030305),
+        ),
         useMaterial3: true,
       ),
       home: const VoxyHomeScreen(),
@@ -37,26 +36,43 @@ class VoxyHomeScreen extends StatefulWidget {
   State<VoxyHomeScreen> createState() => _VoxyHomeScreenState();
 }
 
-class _VoxyHomeScreenState extends State<VoxyHomeScreen> {
+class _VoxyHomeScreenState extends State<VoxyHomeScreen>
+    with SingleTickerProviderStateMixin {
   bool _isConnected = false;
-  String _selectedProtocol = 'Mixed (Proxy + VPN)';
-  String _selectedNode = 'Frankfurt • DE-01 (18ms)';
+  late AnimationController _pulseController;
+  int _selectedProtocolIdx = 0;
+  int _selectedNodeIdx = 0;
 
   final List<String> _protocols = [
-    'Mixed (Proxy + VPN)',
-    'VLESS / Reality',
-    'Shadowsocks',
-    'WireGuard TUN',
-    'SOCKS5 / HTTP',
+    'MIXED (VLESS + TUN)',
+    'VLESS REALITY',
+    'WIREGUARD TUN',
+    'SHADOWSOCKS 2022',
+    'HYSTERIA 2',
   ];
 
   final List<Map<String, String>> _nodes = [
-    {'name': 'Frankfurt • DE-01', 'ping': '18ms', 'country': '🇩🇪'},
-    {'name': 'Amsterdam • NL-04', 'ping': '24ms', 'country': '🇳🇱'},
-    {'name': 'Helsinki • FI-02', 'ping': '35ms', 'country': '🇫🇮'},
-    {'name': 'Warsaw • PL-01', 'ping': '28ms', 'country': '🇵🇱'},
-    {'name': 'Tokyo • JP-02', 'ping': '120ms', 'country': '🇯🇵'},
+    {'city': 'Frankfurt', 'code': 'DE-01', 'ping': '14 ms', 'flag': '🇩🇪', 'ip': '185.190.140.12'},
+    {'city': 'Amsterdam', 'code': 'NL-04', 'ping': '19 ms', 'flag': '🇳🇱', 'ip': '45.134.225.88'},
+    {'city': 'Helsinki', 'code': 'FI-02', 'ping': '27 ms', 'flag': '🇫🇮', 'ip': '95.216.14.33'},
+    {'city': 'Warsaw', 'code': 'PL-01', 'ping': '22 ms', 'flag': '🇵🇱', 'ip': '193.33.111.4'},
+    {'city': 'Tokyo', 'code': 'JP-03', 'ping': '115 ms', 'flag': '🇯🇵', 'ip': '103.102.166.5'},
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2400),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
 
   void _toggleConnection() {
     setState(() {
@@ -66,257 +82,551 @@ class _VoxyHomeScreenState extends State<VoxyHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final statusColor = _isConnected ? const Color(0xFF10B981) : const Color(0xFF64748B);
+    final activeNode = _nodes[_selectedNodeIdx];
+    final activeColor = _isConnected ? const Color(0xFF10B981) : const Color(0xFF6366F1);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          children: [
-            Image.asset(
-              'assets/images/voxy-logo.png',
-              width: 32,
-              height: 32,
-              errorBuilder: (_, __, ___) => const Icon(Icons.shield_outlined, color: Color(0xFF818CF8)),
-            ),
-            const SizedBox(width: 10),
-            const Text(
-              'VOXY',
-              style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.5),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.tune_rounded),
-            onPressed: () {},
-            tooltip: 'Routing Rules',
-          ),
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: () {},
-            tooltip: 'Settings',
-          ),
-        ],
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Connection Status Card
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1E293B),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: _isConnected ? const Color(0xFF10B981).withOpacity(0.3) : Colors.white10,
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 10,
-                          height: 10,
-                          decoration: BoxDecoration(
-                            color: statusColor,
-                            shape: BoxShape.circle,
-                            boxShadow: _isConnected
-                                ? [
-                                    BoxShadow(
-                                      color: statusColor.withOpacity(0.6),
-                                      blurRadius: 8,
-                                      spreadRadius: 2,
-                                    )
-                                  ]
-                                : [],
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          _isConnected ? 'PROTECTED (TUNNEL ACTIVE)' : 'DISCONNECTED',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 1,
-                            color: statusColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Text(
-                      _isConnected ? '00:14:22' : '--:--:--',
-                      style: const TextStyle(color: Colors.white54, fontSize: 12),
-                    ),
+      backgroundColor: const Color(0xFF030305),
+      body: Stack(
+        children: [
+          // Cyber Ambient Glow Background
+          Positioned(
+            top: -120,
+            left: -80,
+            child: Container(
+              width: 320,
+              height: 320,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    activeColor.withOpacity(_isConnected ? 0.22 : 0.12),
+                    Colors.transparent,
                   ],
                 ),
               ),
-
-              const Spacer(),
-
-              // Big Connect Power Button
-              Center(
-                child: GestureDetector(
-                  onTap: _toggleConnection,
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    width: 180,
-                    height: 180,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        colors: _isConnected
-                            ? [const Color(0xFF059669), const Color(0xFF10B981)]
-                            : [const Color(0xFF334155), const Color(0xFF1E293B)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: _isConnected
-                              ? const Color(0xFF10B981).withOpacity(0.4)
-                              : Colors.black45,
-                          blurRadius: 30,
-                          spreadRadius: _isConnected ? 6 : 2,
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                      child: Icon(
-                        Icons.power_settings_new_rounded,
-                        size: 72,
-                        color: _isConnected ? Colors.white : Colors.white70,
-                      ),
-                    ),
-                  ),
+            ),
+          ),
+          Positioned(
+            bottom: -100,
+            right: -80,
+            child: Container(
+              width: 350,
+              height: 350,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    const Color(0xFF38BDF8).withOpacity(_isConnected ? 0.15 : 0.05),
+                    Colors.transparent,
+                  ],
                 ),
               ),
+            ),
+          ),
 
-              const SizedBox(height: 16),
-              Center(
-                child: Text(
-                  _isConnected ? 'Tap to Disconnect' : 'Tap to Connect',
-                  style: const TextStyle(color: Colors.white60, fontSize: 14),
-                ),
-              ),
-
-              const Spacer(),
-
-              // Protocol selector
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1E293B),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.white12),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: _selectedProtocol,
-                    isExpanded: true,
-                    icon: const Icon(Icons.arrow_drop_down, color: Colors.white70),
-                    items: _protocols.map((protocol) {
-                      return DropdownMenuItem<String>(
-                        value: protocol,
-                        child: Row(
-                          children: [
-                            const Icon(Icons.security, size: 18, color: Color(0xFF818CF8)),
-                            const SizedBox(width: 10),
-                            Text(protocol, style: const TextStyle(fontSize: 14)),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: (val) {
-                      if (val != null) setState(() => _selectedProtocol = val);
-                    },
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 12),
-
-              // Server Node selector
-              InkWell(
-                onTap: () {
-                  showModalBottomSheet(
-                    context: context,
-                    backgroundColor: const Color(0xFF0F172A),
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-                    ),
-                    builder: (ctx) => ListView.builder(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      itemCount: _nodes.length,
-                      itemBuilder: (context, idx) {
-                        final node = _nodes[idx];
-                        return ListTile(
-                          leading: Text(node['country']!, style: const TextStyle(fontSize: 24)),
-                          title: Text(node['name']!),
-                          trailing: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.white10,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              node['ping']!,
-                              style: const TextStyle(color: Color(0xFF10B981), fontSize: 12),
-                            ),
-                          ),
-                          onTap: () {
-                            setState(() {
-                              _selectedNode = "${node['name']} (${node['ping']})";
-                            });
-                            Navigator.pop(ctx);
-                          },
-                        );
-                      },
-                    ),
-                  );
-                },
-                borderRadius: BorderRadius.circular(16),
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1E293B),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.white12),
-                  ),
-                  child: Row(
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 22.0, vertical: 12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Modern Header
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.public, color: Color(0xFF38BDF8)),
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0B0E14),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: Colors.white.withOpacity(0.08)),
+                            ),
+                            child: Image.asset(
+                              'assets/images/voxy-logo.png',
+                              width: 28,
+                              height: 28,
+                              errorBuilder: (_, __, ___) =>
+                                  const Icon(Icons.shield_rounded, color: Color(0xFF6366F1), size: 26),
+                            ),
+                          ),
                           const SizedBox(width: 12),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('Selected Location', style: TextStyle(color: Colors.white38, fontSize: 11)),
-                              const SizedBox(height: 2),
-                              Text(_selectedNode, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                              const Text(
+                                'VOXY',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 3,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              Row(
+                                children: [
+                                  Text(
+                                    'v1.0.0',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white.withOpacity(0.35),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF1E293B),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: const Text(
+                                      'CORE READY',
+                                      style: TextStyle(
+                                        fontSize: 8,
+                                        fontWeight: FontWeight.w800,
+                                        color: Color(0xFF38BDF8),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ],
                           ),
                         ],
                       ),
-                      const Icon(Icons.chevron_right, color: Colors.white38),
+                      Row(
+                        children: [
+                          _buildGlassIconBtn(Icons.tune_rounded, () {}),
+                          const SizedBox(width: 10),
+                          _buildGlassIconBtn(Icons.settings_outlined, () {}),
+                        ],
+                      ),
                     ],
                   ),
+
+                  const SizedBox(height: 20),
+
+                  // OLED Pill Status Header
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF080A0F),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(
+                        color: _isConnected
+                            ? const Color(0xFF10B981).withOpacity(0.35)
+                            : Colors.white.withOpacity(0.06),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: _isConnected ? const Color(0xFF10B981) : const Color(0xFF64748B),
+                                boxShadow: _isConnected
+                                    ? [
+                                        BoxShadow(
+                                          color: const Color(0xFF10B981).withOpacity(0.8),
+                                          blurRadius: 10,
+                                          spreadRadius: 2,
+                                        )
+                                      ]
+                                    : [],
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              _isConnected ? 'PROTECTED • TUNNEL ACTIVE' : 'SYSTEM DISCONNECTED',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 1.2,
+                                color: _isConnected ? const Color(0xFF10B981) : const Color(0xFF94A3B8),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Text(
+                          _isConnected ? '00:24:18' : '--:--:--',
+                          style: TextStyle(
+                            fontFamily: 'monospace',
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white.withOpacity(0.5),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const Spacer(),
+
+                  // Futuristic OLED Power Core Button
+                  Center(
+                    child: GestureDetector(
+                      onTap: _toggleConnection,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          // Ripple animation rings when active
+                          if (_isConnected)
+                            AnimatedBuilder(
+                              animation: _pulseController,
+                              builder: (context, child) {
+                                return Container(
+                                  width: 250 + (_pulseController.value * 30),
+                                  height: 250 + (_pulseController.value * 30),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: const Color(0xFF10B981).withOpacity(0.35 * (1 - _pulseController.value)),
+                                      width: 2,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+
+                          // Outer Ring
+                          Container(
+                            width: 220,
+                            height: 220,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: const Color(0xFF06080D),
+                              border: Border.all(
+                                color: _isConnected
+                                    ? const Color(0xFF10B981).withOpacity(0.6)
+                                    : Colors.white.withOpacity(0.08),
+                                width: 2,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: _isConnected
+                                      ? const Color(0xFF10B981).withOpacity(0.35)
+                                      : Colors.black.withOpacity(0.8),
+                                  blurRadius: 40,
+                                  spreadRadius: _isConnected ? 8 : 1,
+                                ),
+                              ],
+                            ),
+                            child: Center(
+                              // Inner Core Button
+                              child: Container(
+                                width: 170,
+                                height: 170,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  gradient: RadialGradient(
+                                    colors: _isConnected
+                                        ? [
+                                            const Color(0xFF10B981),
+                                            const Color(0xFF047857),
+                                            const Color(0xFF064E3B),
+                                          ]
+                                        : [
+                                            const Color(0xFF1A1F2C),
+                                            const Color(0xFF0E131F),
+                                            const Color(0xFF06080D),
+                                          ],
+                                  ),
+                                  border: Border.all(
+                                    color: _isConnected
+                                        ? const Color(0xFF6EE7B7)
+                                        : Colors.white.withOpacity(0.12),
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: Center(
+                                  child: Icon(
+                                    Icons.power_settings_new_rounded,
+                                    size: 76,
+                                    color: _isConnected ? Colors.white : const Color(0xFF64748B),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  Center(
+                    child: Text(
+                      _isConnected ? 'TAP TO TERMINATE TUNNEL' : 'TAP TO INITIALIZE SECURE PROXY',
+                      style: TextStyle(
+                        fontSize: 11,
+                        letterSpacing: 2,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white.withOpacity(0.4),
+                      ),
+                    ),
+                  ),
+
+                  const Spacer(),
+
+                  // Live Traffic Metrics Bar
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF07090E),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: Colors.white.withOpacity(0.06)),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildMetricCol('DOWNLOAD', _isConnected ? '42.8 MB/s' : '0.0 B/s', Icons.arrow_downward_rounded, const Color(0xFF38BDF8)),
+                        Container(width: 1, height: 28, color: Colors.white.withOpacity(0.08)),
+                        _buildMetricCol('UPLOAD', _isConnected ? '12.4 MB/s' : '0.0 B/s', Icons.arrow_upward_rounded, const Color(0xFF818CF8)),
+                        Container(width: 1, height: 28, color: Colors.white.withOpacity(0.08)),
+                        _buildMetricCol('LATENCY', _isConnected ? activeNode['ping']! : '--', Icons.bolt_rounded, const Color(0xFF10B981)),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // Protocol Dropdown Switcher
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF07090E),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.white.withOpacity(0.06)),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<int>(
+                        value: _selectedProtocolIdx,
+                        isExpanded: true,
+                        dropdownColor: const Color(0xFF0B0E14),
+                        icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white54),
+                        items: List.generate(_protocols.length, (i) {
+                          return DropdownMenuItem<int>(
+                            value: i,
+                            child: Row(
+                              children: [
+                                const Icon(Icons.vpn_lock_rounded, size: 16, color: Color(0xFF818CF8)),
+                                const SizedBox(width: 10),
+                                Text(
+                                  _protocols[i],
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 1.1,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }),
+                        onChanged: (val) {
+                          if (val != null) setState(() => _selectedProtocolIdx = val);
+                        },
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // Server Location Selector Sheet
+                  InkWell(
+                    onTap: _showServerSelectionModal,
+                    borderRadius: BorderRadius.circular(18),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF07090E),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(color: Colors.white.withOpacity(0.06)),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Text(activeNode['flag']!, style: const TextStyle(fontSize: 26)),
+                              const SizedBox(width: 14),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '${activeNode['city']} • ${activeNode['code']}',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 14,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'IP: ${activeNode['ip']}',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.white.withOpacity(0.35),
+                                      fontFamily: 'monospace',
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF10B981).withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: const Color(0xFF10B981).withOpacity(0.3)),
+                            ),
+                            child: Text(
+                              activeNode['ping']!,
+                              style: const TextStyle(
+                                color: Color(0xFF10B981),
+                                fontWeight: FontWeight.w800,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGlassIconBtn(IconData icon, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(9),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0B0E14),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white.withOpacity(0.08)),
+        ),
+        child: Icon(icon, size: 18, color: Colors.white70),
+      ),
+    );
+  }
+
+  Widget _buildMetricCol(String label, String value, IconData icon, Color color) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 12, color: color),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: Colors.white.withOpacity(0.35)),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Colors.white),
+        ),
+      ],
+    );
+  }
+
+  void _showServerSelectionModal() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF07090E),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              const SizedBox(height: 12),
-            ],
-          ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'SELECT PROXY / VPN CLUSTER',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1.5,
+                color: Color(0xFF38BDF8),
+              ),
+            ),
+            const SizedBox(height: 16),
+            ...List.generate(_nodes.length, (idx) {
+              final node = _nodes[idx];
+              final isCurrent = idx == _selectedNodeIdx;
+              return Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(
+                  color: isCurrent ? const Color(0xFF101524) : const Color(0xFF0B0E14),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: isCurrent ? const Color(0xFF6366F1).withOpacity(0.5) : Colors.white.withOpacity(0.06),
+                  ),
+                ),
+                child: ListTile(
+                  leading: Text(node['flag']!, style: const TextStyle(fontSize: 24)),
+                  title: Text(
+                    '${node['city']} • ${node['code']}',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                  subtitle: Text(
+                    'IP: ${node['ip']}',
+                    style: TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.35)),
+                  ),
+                  trailing: Text(
+                    node['ping']!,
+                    style: const TextStyle(
+                      color: Color(0xFF10B981),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 11,
+                    ),
+                  ),
+                  onTap: () {
+                    setState(() => _selectedNodeIdx = idx);
+                    Navigator.pop(ctx);
+                  },
+                ),
+              );
+            }),
+            const SizedBox(height: 12),
+          ],
         ),
       ),
     );
   }
 }
-

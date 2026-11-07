@@ -3,76 +3,160 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Voxy Web Preview</title>
+  <title>VOXY — Cyber Black OLED Edition</title>
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
     }
     body {
-      background: #020617;
+      background: #000000;
       color: #f8fafc;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      padding: 20px;
+      padding: 24px;
+      overflow: hidden;
+    }
+    /* Subtle background grid pattern */
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-image: 
+        radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+      background-size: 24px 24px;
+      z-index: 0;
+      pointer-events: none;
     }
     .mockup-container {
-      width: 380px;
-      height: 780px;
-      background: #0f172a;
-      border-radius: 44px;
-      border: 8px solid #1e293b;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(99, 102, 241, 0.2);
+      width: 390px;
+      height: 820px;
+      background: #030305;
+      border-radius: 52px;
+      border: 6px solid #141722;
+      box-shadow: 
+        0 30px 80px rgba(0, 0, 0, 0.9),
+        0 0 60px rgba(99, 102, 241, 0.15),
+        inset 0 0 1px 1px rgba(255, 255, 255, 0.08);
       display: flex;
       flex-direction: column;
       overflow: hidden;
       position: relative;
+      z-index: 1;
     }
-    .notch {
-      width: 140px;
-      height: 24px;
-      background: #1e293b;
-      margin: 0 auto;
-      border-bottom-left-radius: 16px;
-      border-bottom-right-radius: 16px;
+    .glow-sphere {
+      position: absolute;
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      transition: all 0.6s ease;
+    }
+    .glow-1 {
+      top: -100px;
+      left: -80px;
+      background: rgba(99, 102, 241, 0.15);
+    }
+    .glow-1.active {
+      background: rgba(16, 185, 129, 0.22);
+    }
+    .glow-2 {
+      bottom: -100px;
+      right: -80px;
+      background: rgba(56, 189, 248, 0.08);
     }
     .header {
-      padding: 16px 24px;
+      padding: 24px 24px 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      z-index: 2;
     }
-    .brand {
+    .brand-wrap {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 20px;
-      font-weight: 800;
-      letter-spacing: 2px;
-      color: #818cf8;
+      gap: 12px;
     }
-    .status-bar {
-      margin: 12px 24px;
-      padding: 12px 16px;
-      background: #1e293b;
-      border-radius: 14px;
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      background: #080a0f;
+      border: 1px solid rgba(255, 255, 255, 0.08);
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      font-size: 11px;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+    .brand-logo img {
+      width: 24px;
+      height: 24px;
+    }
+    .brand-title {
+      font-size: 17px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      color: #ffffff;
+      line-height: 1.1;
+    }
+    .brand-sub {
+      font-size: 9px;
+      letter-spacing: 1px;
       font-weight: 700;
-      letter-spacing: 0.5px;
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      color: #64748b;
+      display: flex;
+      gap: 6px;
+      align-items: center;
     }
-    .status-indicator {
+    .badge-sub {
+      background: #111827;
+      color: #38bdf8;
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-size: 8px;
+    }
+    .icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      background: #080a0f;
+      border: 1px solid rgba(255, 255, 255, 0.08);
       display: flex;
       align-items: center;
-      gap: 8px;
+      justify-content: center;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    .icon-btn:hover {
+      background: #121620;
+      color: #ffffff;
+    }
+    .status-pill {
+      margin: 10px 22px;
+      padding: 12px 18px;
+      background: #06080d;
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 2;
+    }
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.2px;
     }
     .dot {
       width: 8px;
@@ -83,116 +167,219 @@
     }
     .dot.active {
       background: #10b981;
-      box-shadow: 0 0 10px #10b981;
+      box-shadow: 0 0 12px #10b981;
     }
-    .main-body {
+    .timer {
+      font-family: monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.45);
+    }
+    .main-stage {
       flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 0 24px;
+      position: relative;
+      z-index: 2;
     }
-    .power-btn {
-      width: 180px;
-      height: 180px;
+    .core-ring {
+      width: 220px;
+      height: 220px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #334155, #1e293b);
-      border: none;
-      outline: none;
-      cursor: pointer;
+      background: #04060a;
+      border: 2px solid rgba(255, 255, 255, 0.06);
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+      position: relative;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .core-ring.active {
+      border-color: rgba(16, 185, 129, 0.5);
+      box-shadow: 0 0 60px rgba(16, 185, 129, 0.35);
+    }
+    .core-button {
+      width: 170px;
+      height: 170px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #161b26 0%, #0c1017 70%, #06080d 100%);
+      border: 1.5px solid rgba(255, 255, 255, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      outline: none;
+      transition: all 0.4s ease;
+    }
+    .core-ring.active .core-button {
+      background: radial-gradient(circle, #10b981 0%, #047857 60%, #064e3b 100%);
+      border-color: #6ee7b7;
+    }
+    .power-symbol {
+      font-size: 72px;
+      color: #64748b;
       transition: all 0.3s ease;
+      line-height: 1;
     }
-    .power-btn.active {
-      background: linear-gradient(135deg, #059669, #10b981);
-      box-shadow: 0 0 40px rgba(16, 185, 129, 0.5);
-    }
-    .power-icon {
-      font-size: 68px;
-      color: #94a3b8;
-      transition: all 0.3s;
-    }
-    .power-btn.active .power-icon {
+    .core-ring.active .power-symbol {
       color: #ffffff;
+      text-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
     }
-    .connect-label {
-      margin-top: 16px;
-      color: #94a3b8;
-      font-size: 13px;
+    .tap-label {
+      margin-top: 24px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: rgba(255, 255, 255, 0.35);
+      text-transform: uppercase;
     }
-    .selectors {
-      padding: 20px 24px 32px;
+    .metrics-bar {
+      margin: 0 22px 12px;
+      padding: 14px 20px;
+      background: #06080d;
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 2;
+    }
+    .metric-col {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      align-items: center;
+      gap: 3px;
     }
-    .card {
-      background: #1e293b;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 14px;
+    .metric-hdr {
+      font-size: 9px;
+      font-weight: 800;
+      color: rgba(255, 255, 255, 0.35);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .metric-val {
+      font-size: 13px;
+      font-weight: 800;
+      color: #ffffff;
+    }
+    .v-divider {
+      width: 1px;
+      height: 26px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .panel-footer {
+      padding: 0 22px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 2;
+    }
+    .card-dark {
+      background: #06080d;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 16px;
       padding: 14px 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       cursor: pointer;
+      transition: all 0.2s;
     }
-    .card:hover {
-      background: #273549;
+    .card-dark:hover {
+      background: #0c1017;
+      border-color: rgba(255, 255, 255, 0.12);
     }
-    .badge {
-      background: rgba(16, 185, 129, 0.15);
+    .latency-pill {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
       color: #10b981;
-      padding: 4px 8px;
-      border-radius: 6px;
+      padding: 4px 10px;
+      border-radius: 8px;
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 800;
     }
   </style>
 </head>
 <body>
   <div class="mockup-container">
-    <div class="notch"></div>
+    <div class="glow-sphere glow-1" id="glow1"></div>
+    <div class="glow-sphere glow-2"></div>
+
     <div class="header">
-      <div class="brand">🛡️ VOXY</div>
-      <div style="color: #94a3b8; cursor: pointer;">⚙️</div>
-    </div>
-
-    <div class="status-bar">
-      <div class="status-indicator">
-        <div id="dot" class="dot"></div>
-        <span id="status-text" style="color: #64748b;">DISCONNECTED</span>
+      <div class="brand-wrap">
+        <div class="brand-logo">
+          <img src="../assets/images/voxy-logo.png" alt="Voxy" onerror="this.outerHTML='🛡️'">
+        </div>
+        <div>
+          <div class="brand-title">VOXY</div>
+          <div class="brand-sub">
+            <span>v1.0.0</span>
+            <span class="badge-sub">CORE READY</span>
+          </div>
+        </div>
       </div>
-      <span id="timer" style="color: #64748b;">--:--:--</span>
+      <div style="display: flex; gap: 8px;">
+        <div class="icon-btn">⚡</div>
+        <div class="icon-btn">⚙️</div>
+      </div>
     </div>
 
-    <div class="main-body">
-      <button id="btn" class="power-btn" onclick="toggle()">
-        <span class="power-icon">⏻</span>
-      </button>
-      <div id="label" class="connect-label">Tap to Connect</div>
+    <div class="status-pill">
+      <div class="status-badge">
+        <div id="dot" class="dot"></div>
+        <span id="status-title" style="color: #64748b;">SYSTEM DISCONNECTED</span>
+      </div>
+      <span id="timer" class="timer">--:--:--</span>
     </div>
 
-    <div class="selectors">
-      <div class="card">
-        <div style="display: flex; gap: 8px; align-items: center;">
-          <span>🔒</span>
-          <span style="font-size: 13px; font-weight: 600;">Mixed (Proxy + TUN)</span>
+    <div class="main-stage">
+      <div id="coreRing" class="core-ring" onclick="toggleTunnel()">
+        <div class="core-button">
+          <span class="power-symbol">⏻</span>
+        </div>
+      </div>
+      <div id="tapLabel" class="tap-label">Tap to initialize secure proxy</div>
+    </div>
+
+    <div class="metrics-bar">
+      <div class="metric-col">
+        <div class="metric-hdr"><span style="color: #38bdf8;">↓</span> DOWN</div>
+        <div id="downVal" class="metric-val">0.0 B/s</div>
+      </div>
+      <div class="v-divider"></div>
+      <div class="metric-col">
+        <div class="metric-hdr"><span style="color: #818cf8;">↑</span> UP</div>
+        <div id="upVal" class="metric-val">0.0 B/s</div>
+      </div>
+      <div class="v-divider"></div>
+      <div class="metric-col">
+        <div class="metric-hdr"><span style="color: #10b981;">⚡</span> PING</div>
+        <div id="pingVal" class="metric-val">--</div>
+      </div>
+    </div>
+
+    <div class="panel-footer">
+      <div class="card-dark">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="color: #818cf8; font-size: 14px;">🔒</span>
+          <span style="font-size: 12px; font-weight: 800; letter-spacing: 1px;">MIXED (VLESS + TUN)</span>
         </div>
         <span style="color: #64748b; font-size: 12px;">▼</span>
       </div>
-      <div class="card">
-        <div style="display: flex; gap: 8px; align-items: center;">
-          <span style="font-size: 20px;">🇩🇪</span>
+
+      <div class="card-dark">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 26px;">🇩🇪</span>
           <div>
-            <div style="font-size: 10px; color: #64748b;">SELECTED LOCATION</div>
-            <div style="font-size: 13px; font-weight: 600;">Frankfurt • DE-01</div>
+            <div style="font-size: 13px; font-weight: 800;">Frankfurt • DE-01</div>
+            <div style="font-size: 10px; color: rgba(255,255,255,0.35); font-family: monospace;">IP: 185.190.140.12</div>
           </div>
         </div>
-        <span class="badge">18ms</span>
+        <div class="latency-pill">14 ms</div>
       </div>
     </div>
   </div>
@@ -200,39 +387,53 @@
   <script>
     let active = false;
     let sec = 0;
-    let timerId = null;
+    let timerInterval = null;
 
-    function toggle() {
+    function toggleTunnel() {
       active = !active;
-      const btn = document.getElementById('btn');
+      const ring = document.getElementById('coreRing');
       const dot = document.getElementById('dot');
-      const text = document.getElementById('status-text');
-      const label = document.getElementById('label');
+      const glow = document.getElementById('glow1');
+      const title = document.getElementById('status-title');
+      const tapLabel = document.getElementById('tapLabel');
       const timer = document.getElementById('timer');
+      const down = document.getElementById('downVal');
+      const up = document.getElementById('upVal');
+      const ping = document.getElementById('pingVal');
 
       if (active) {
-        btn.classList.add('active');
+        ring.classList.add('active');
         dot.classList.add('active');
-        text.innerText = 'PROTECTED (TUNNEL ACTIVE)';
-        text.style.color = '#10b981';
-        label.innerText = 'Tap to Disconnect';
-        timerId = setInterval(() => {
+        glow.classList.add('active');
+        title.innerText = 'PROTECTED • TUNNEL ACTIVE';
+        title.style.color = '#10b981';
+        tapLabel.innerText = 'Tap to terminate tunnel';
+        down.innerText = '42.8 MB/s';
+        up.innerText = '12.4 MB/s';
+        ping.innerText = '14 ms';
+
+        timerInterval = setInterval(() => {
           sec++;
           const m = String(Math.floor(sec / 60)).padStart(2, '0');
           const s = String(sec % 60).padStart(2, '0');
           timer.innerText = `00:${m}:${s}`;
-          timer.style.color = '#f8fafc';
+          timer.style.color = '#ffffff';
         }, 1000);
       } else {
-        btn.classList.remove('active');
+        ring.classList.remove('active');
         dot.classList.remove('active');
-        text.innerText = 'DISCONNECTED';
-        text.style.color = '#64748b';
-        label.innerText = 'Tap to Connect';
-        clearInterval(timerId);
+        glow.classList.remove('active');
+        title.innerText = 'SYSTEM DISCONNECTED';
+        title.style.color = '#64748b';
+        tapLabel.innerText = 'Tap to initialize secure proxy';
+        down.innerText = '0.0 B/s';
+        up.innerText = '0.0 B/s';
+        ping.innerText = '--';
+
+        clearInterval(timerInterval);
         sec = 0;
         timer.innerText = '--:--:--';
-        timer.style.color = '#64748b';
+        timer.style.color = 'rgba(255, 255, 255, 0.45)';
       }
     }
   </script>
